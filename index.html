@@ -5,16 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>每日一句 Everyday English</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<meta name="theme-color" content="#2f6b5a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="每日一句">
+<meta name="application-name" content="每日一句">
 <style>
 /* One reading column like a pocket phrasebook. Newest lesson open on top, older ones folded below. */
 :root {
   --bg: #f2f4f1; --paper: #fbfcfa; --ink: #1d2a26; --muted: #5d6b66; --line: #d6ddd8;
   --gum: #2f6b5a; --gum-soft: #dfece6; --band: #2f6b5a; --wattle: #e2a23b; --wattle-soft: #fbefd6;
   --bad: #b5523b; --bad-soft: #f6e3dd;
-  --f-display: "Bricolage Grotesque", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  --f-body: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
-  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  /* system fonts only: Google Fonts is blocked in mainland China and would stall the page */
+  --f-display: -apple-system, BlinkMacSystemFont, Roboto, "HarmonyOS Sans SC", "MiSans", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --f-body: -apple-system, BlinkMacSystemFont, Roboto, "HarmonyOS Sans SC", "MiSans", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --f-mono: ui-monospace, "Roboto Mono", "SF Mono", Menlo, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root {
@@ -275,7 +281,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
       var text = ta.value.trim();
       if (!text) { msg.textContent = '先写点什么吧'; return; }
       var done = function () { msg.textContent = '已复制，去微信粘贴吧'; };
-      var fallback = function () { ta.select(); try { document.execCommand('copy'); done(); } catch (e) { msg.textContent = '请长按文字手动复制'; } };
+      var fallback = function () {
+        ta.focus(); ta.select(); try { ta.setSelectionRange(0, ta.value.length); } catch (e) {}
+        var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+        msg.textContent = ok ? '已复制，去微信粘贴吧' : '已帮你选中文字，长按选“复制”';
+      };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
     }
   });
