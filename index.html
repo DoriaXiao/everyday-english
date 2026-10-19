@@ -107,6 +107,15 @@ textarea { width: 100%; min-height: 110px; resize: vertical; border: 1px solid v
 .progress:empty { display: none }
 .review .drill li { background: var(--wattle-soft); border-color: transparent }
 nav a.done span::after { content: " ✓"; color: var(--gum) }
+.mine { display: grid; gap: 10px }
+.mine:empty { display: none }
+.answer { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px }
+.answer .when { font-family: var(--f-mono); font-size: 12px; color: var(--muted) }
+.answer .text { white-space: pre-wrap; overflow-wrap: anywhere }
+.answer .reply { background: var(--gum-soft); border-radius: 10px; padding: 8px 12px; white-space: pre-wrap; overflow-wrap: anywhere }
+.answer .reply b { display: block; font-size: 12px; color: var(--gum) }
+.answer .waiting { font-size: 13px; color: var(--muted) }
+.primary:disabled { opacity: .6 }
 footer { color: var(--muted); font-size: 13px; text-align: center }
 button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-visible { outline: 2px solid var(--wattle); outline-offset: 2px }
 @media (max-width: 520px) { .fix { grid-template-columns: 1fr } .line { grid-template-columns: 1fr auto } .line .who { grid-column: 1 / -1; padding: 0 } }
@@ -146,7 +155,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">单元总结：用过去式写三四句话，讲一次你（想象中）在澳洲看病的经历，从预约写到拿药。</p>
       <textarea id="w-15" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-15">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="15" data-for="w-15">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-15" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="15"></div>
     </section>
   </div>
 </details>
@@ -174,7 +185,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：想象你在看医生，用 I&#x27;ve had... for... 说你哪里不舒服、多久了。</p>
       <textarea id="w-14" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-14">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="14" data-for="w-14">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-14" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="14"></div>
     </section>
   </div>
 </details>
@@ -202,7 +215,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：如果你在澳洲感冒了，打电话给诊所，你会怎么说？</p>
       <textarea id="w-13" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-13">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="13" data-for="w-13">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-13" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="13"></div>
     </section>
   </div>
 </details>
@@ -230,7 +245,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">单元总结：用过去式写三句话，讲一次你和朋友去咖啡馆的经历，从点单写到付钱。</p>
       <textarea id="w-12" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-12">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="12" data-for="w-12">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-12" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="12"></div>
     </section>
   </div>
 </details>
@@ -258,7 +275,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：你有没有不吃或不能吃的东西？用英文告诉店员。</p>
       <textarea id="w-11" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-11">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="11" data-for="w-11">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-11" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="11"></div>
     </section>
   </div>
 </details>
@@ -286,7 +305,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：你平时喜欢喝什么？如果在澳洲的咖啡馆，你会怎么点？</p>
       <textarea id="w-10" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-10">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="10" data-for="w-10">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-10" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="10"></div>
     </section>
   </div>
 </details>
@@ -314,7 +335,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">单元总结：给一个好久没见的朋友写一条英文消息，说说你最近的情况（过去式），再约他这周末见面。</p>
       <textarea id="w-9" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-9">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="9" data-for="w-9">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-9" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="9"></div>
     </section>
   </div>
 </details>
@@ -342,7 +365,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写三句：你上个周末做了什么？每句至少一个过去式动词，写完自己检查一遍。</p>
       <textarea id="w-8" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-8">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="8" data-for="w-8">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-8" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="8"></div>
     </section>
   </div>
 </details>
@@ -370,7 +395,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：你最近一个月发生了什么？注意用过去式。</p>
       <textarea id="w-7" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-7">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="7" data-for="w-7">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-7" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="7"></div>
     </section>
   </div>
 </details>
@@ -398,7 +425,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">单元总结：写三句话，把这三天串起来，从打招呼、聊工作和家乡，到告别和留联系方式。</p>
       <textarea id="w-6" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-6">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="6" data-for="w-6">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-6" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="6"></div>
     </section>
   </div>
 </details>
@@ -426,7 +455,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：用英文介绍你的工作和家乡，就像第一次见面跟人聊天那样。</p>
       <textarea id="w-5" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-5">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="5" data-for="w-5">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-5" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="5"></div>
     </section>
   </div>
 </details>
@@ -454,7 +485,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：想象你在朋友聚会上认识了一个新朋友，你们说了什么？</p>
       <textarea id="w-4" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-4">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="4" data-for="w-4">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-4" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="4"></div>
     </section>
   </div>
 </details>
@@ -482,7 +515,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">这个单元学完了。写三句话，讲一次完整的购物：找东西、结账、或者退货，挑你最想说的。</p>
       <textarea id="w-3" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-3">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="3" data-for="w-3">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-3" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="3"></div>
     </section>
   </div>
 </details>
@@ -510,7 +545,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：描述你上一次结账的过程，用上 bag、card 或 receipt 中的至少两个词。</p>
       <textarea id="w-2" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-2">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="2" data-for="w-2">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-2" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="2"></div>
     </section>
   </div>
 </details>
@@ -538,7 +575,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <section class="block"><h3>写两句 <span class="mono">Write</span></h3>
       <p class="hint">写两三句：你最近一次在超市找不到什么东西？如果当时会说今天的句子，你会怎么问？</p>
       <textarea id="w-1" placeholder="Write 2-3 sentences in English…"></textarea>
-      <div class="row"><button class="primary copy" type="button" data-for="w-1">复制，发微信给我</button><span class="copied" aria-live="polite"></span></div>
+      <div class="row"><button class="primary submit" type="button" data-day="1" data-for="w-1">提交</button><span class="copied" aria-live="polite"></span></div>
+      <button class="ghost copy" type="button" data-for="w-1" hidden>提交不了？复制后发微信</button>
+      <div class="mine" data-day="1"></div>
     </section>
   </div>
 </details>
@@ -604,6 +643,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
       var lines = pa.closest('.block').querySelectorAll('.line [data-say]');
       speak(lines);
     }
+    var sub = ev.target.closest('.submit');
+    if (sub) submitAnswer(sub);
     var db = ev.target.closest('.donebtn');
     if (db) {
       var done = store('done') || [], day = Number(db.getAttribute('data-day')), i = done.indexOf(day);
@@ -643,6 +684,78 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   var first = lessons.filter(function (l) { return !l.hidden; })[0];
   lessons.forEach(function (l) { l.open = l === first; });
   if (first) { var cur = document.querySelector('nav a[href="#' + first.id + '"]'); if (cur) cur.classList.add('current'); }
+  // answers: stored in Supabase under an anonymous sign-in kept on this phone; replies come back here
+  var SB = 'https://rrmfujomfedxxnchfcgi.supabase.co', SBK = 'sb_publishable_Jlfc5BOhR-UtmNmNc_FdjA_MImfGAfW';
+  function api(path, opts) {
+    opts = opts || {};
+    var headers = { apikey: SBK, 'Content-Type': 'application/json' };
+    if (opts.token) headers.Authorization = 'Bearer ' + opts.token;
+    if (opts.prefer) headers.Prefer = opts.prefer;
+    return fetch(SB + path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: 'no-store' })
+      .then(function (r) {
+        return r.text().then(function (t) {
+          var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+          if (!r.ok) { var err = new Error('http ' + r.status); err.status = r.status; throw err; }
+          return j;
+        });
+      });
+  }
+  function retry(fn) {  // one more try after a network hiccup or server error
+    return fn().catch(function (e) {
+      if (e.status && e.status < 500) throw e;
+      return new Promise(function (res) { setTimeout(res, 1500); }).then(fn);
+    });
+  }
+  function saveSession(d) { store('sb-session', { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() / 1000 + (d.expires_in || 3600) }); }
+  function token(createIfMissing) {
+    var s = store('sb-session');
+    if (s && s.access_token && s.expires_at - 60 > Date.now() / 1000) return Promise.resolve(s.access_token);
+    var signup = function () { return retry(function () { return api('/auth/v1/signup', { method: 'POST', body: {} }); }); };
+    var p;
+    if (s && s.refresh_token) {
+      p = retry(function () { return api('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: s.refresh_token } }); })
+        .catch(function (e) { if (e.status && e.status < 500 && createIfMissing) return signup(); throw e; });
+    } else if (createIfMissing) {
+      p = signup();
+    } else {
+      return Promise.resolve(null);
+    }
+    return p.then(function (d) { saveSession(d); return d.access_token; });
+  }
+  function fmt(iso) { var d = new Date(iso); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function renderMine(rows) {
+    document.querySelectorAll('.mine').forEach(function (box) {
+      var day = Number(box.getAttribute('data-day'));
+      box.innerHTML = rows.filter(function (r) { return r.day === day; }).map(function (r) {
+        return '<div class="answer"><span class="when">' + fmt(r.created_at) + ' 提交</span><div class="text">' + esc(r.text) + '</div>' +
+          (r.reply ? '<div class="reply"><b>回复</b>' + esc(r.reply) + '</div>' : '<span class="waiting">已收到，等回复中</span>') + '</div>';
+      }).join('');
+    });
+  }
+  function loadMine() {
+    return token(false).then(function (t) {
+      if (!t) return;
+      return retry(function () { return api('/rest/v1/submissions?select=id,day,text,created_at,reply&order=created_at.asc', { token: t }); }).then(renderMine);
+    }).catch(function () {});
+  }
+  function submitAnswer(btn) {
+    var ta = document.getElementById(btn.getAttribute('data-for')), msg = btn.parentNode.querySelector('.copied');
+    var copyBtn = btn.closest('.block').querySelector('.copy');
+    var text = ta.value.trim();
+    if (!text) { msg.textContent = '先写点什么吧'; return; }
+    btn.disabled = true; btn.textContent = '提交中…'; msg.textContent = '';
+    token(true).then(function (t) {
+      return retry(function () { return api('/rest/v1/submissions', { method: 'POST', token: t, prefer: 'return=minimal', body: { day: Number(btn.getAttribute('data-day')), text: text } }); });
+    }).then(function () {
+      ta.value = ''; try { localStorage.removeItem('draft-' + ta.id); } catch (e) {} msg.textContent = '已提交 ✓'; copyBtn.hidden = true;
+      return loadMine();
+    }).catch(function () {
+      msg.textContent = '没提交上，网络不好的话等会儿再试，或者复制后发微信';
+      copyBtn.hidden = false;
+    }).then(function () { btn.disabled = false; btn.textContent = '提交'; });
+  }
+  loadMine();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) loadMine(); });
   // progress, kept on this device only
   function renderDone() {
     var done = store('done') || [];
