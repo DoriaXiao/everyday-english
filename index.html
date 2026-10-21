@@ -136,6 +136,15 @@ nav a.done span::after { content: " ✓"; color: var(--gum) }
 .answer .reply b { display: block; font-size: 12px; color: var(--gum) }
 .answer .waiting { font-size: 13px; color: var(--muted) }
 .primary:disabled { opacity: .6 }
+.inbox { background: var(--wattle-soft); border: 2px solid var(--wattle); border-radius: 14px; padding: 14px 16px; display: grid; gap: 12px }
+.inbox h2 { margin: 0; font-size: 18px }
+.inbox .item { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line) }
+.inbox .item .when { font-size: 13px; color: var(--muted) }
+.inbox .item .mine-text { font-size: 14px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere }
+.inbox .item .reply-text { background: var(--paper); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere }
+.inbox .item .reply-text b { display: block; font-size: 12px; color: var(--gum) }
+.inbox .gotit { justify-self: start; border: 0; border-radius: 999px; padding: 10px 18px; background: var(--wattle); color: #1d2a26; font: inherit; font-weight: 700; cursor: pointer }
+.answer.fresh { border: 2px solid var(--wattle) }
 footer { color: var(--muted); font-size: 13px; text-align: center }
 button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-visible { outline: 2px solid var(--wattle); outline-offset: 2px }
 @media (max-width: 520px) { .fix { grid-template-columns: 1fr } .line { grid-template-columns: 1fr auto } .line .who { grid-column: 1 / -1; padding: 0 } }
@@ -149,6 +158,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <p>每个生活场景学三天，跟着步骤走，大约十分钟。</p>
     <span class="progress" id="progress"></span>
   </header>
+  <section class="inbox" id="inbox" hidden aria-live="polite"></section>
   <nav aria-label="最近几天"><a href="#day-15" data-date="2026-10-31">Day 15<span>看医生 · 去药店拿药</span></a><a href="#day-14" data-date="2026-10-30">Day 14<span>看医生 · 说症状</span></a><a href="#day-13" data-date="2026-10-29">Day 13<span>看医生 · 打电话预约</span></a><a href="#day-12" data-date="2026-10-28">Day 12<span>咖啡馆 · 结账</span></a><a href="#day-11" data-date="2026-10-27">Day 11<span>咖啡馆 · 点吃的</span></a><a href="#day-10" data-date="2026-10-26">Day 10<span>咖啡馆 · 点咖啡</span></a><a href="#day-9" data-date="2026-10-25">Day 9<span>和朋友叙旧 · 约下次</span></a><a href="#day-8" data-date="2026-10-24">Day 8<span>和朋友叙旧 · 讲讲周末</span></a><a href="#day-7" data-date="2026-10-23">Day 7<span>和朋友叙旧 · 好久不见</span></a><a href="#day-6" data-date="2026-10-22">Day 6<span>第一次见面 · 留联系方式</span></a><a href="#day-5" data-date="2026-10-21">Day 5<span>第一次见面 · 聊几句</span></a><a href="#day-4" data-date="2026-10-20">Day 4<span>第一次见面 · 打招呼</span></a><a href="#day-3" data-date="2026-10-19">Day 3<span>超市 · 熟食柜和退货</span></a><a href="#day-2" data-date="2026-10-18">Day 2<span>超市 · 结账</span></a><a href="#day-1" data-date="2026-10-17">Day 1<span>超市 · 找东西</span></a><a class="more" href="#course">全部课程 ↓</a></nav>
   
 <details class="lesson" id="day-15" data-date="2026-10-31" data-unit="看医生" >
@@ -457,7 +467,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <div class="stepnav" hidden><button class="ghost prev" type="button">上一步</button><button class="primary nextstep" type="button">下一步</button></div>
   </div>
 </details>
-<details class="lesson" id="day-6" data-date="2026-10-22" data-unit="第一次见面" >
+<details class="lesson" id="day-6" data-date="2026-10-22" data-unit="第一次见面" open>
   <summary class="unit">
     <span class="mono">Day 6 · 10/22 · 第一次见面 第 3/3 天</span>
     <span class="h2">It was great chatting with you!</span>
@@ -525,7 +535,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <div class="stepnav" hidden><button class="ghost prev" type="button">上一步</button><button class="primary nextstep" type="button">下一步</button></div>
   </div>
 </details>
-<details class="lesson" id="day-4" data-date="2026-10-20" data-unit="第一次见面" open>
+<details class="lesson" id="day-4" data-date="2026-10-20" data-unit="第一次见面" >
   <summary class="unit">
     <span class="mono">Day 4 · 10/20 · 第一次见面 第 1/3 天</span>
     <span class="h2">Hi, I&#x27;m Lin. Nice to meet you.</span>
@@ -662,7 +672,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   </div>
 </details>
   <details class="course" id="course"><summary>全部课程（按场景）</summary><div class="cgroup" data-date="2026-10-29"><b>看医生</b><div class="clinks"><a href="#day-13" data-date="2026-10-29">第 1 天 · 打电话预约</a><a href="#day-14" data-date="2026-10-30">第 2 天 · 说症状</a><a href="#day-15" data-date="2026-10-31">第 3 天 · 去药店拿药</a></div></div><div class="cgroup" data-date="2026-10-26"><b>咖啡馆</b><div class="clinks"><a href="#day-10" data-date="2026-10-26">第 1 天 · 点咖啡</a><a href="#day-11" data-date="2026-10-27">第 2 天 · 点吃的</a><a href="#day-12" data-date="2026-10-28">第 3 天 · 结账</a></div></div><div class="cgroup" data-date="2026-10-23"><b>和朋友叙旧</b><div class="clinks"><a href="#day-7" data-date="2026-10-23">第 1 天 · 好久不见</a><a href="#day-8" data-date="2026-10-24">第 2 天 · 讲讲周末</a><a href="#day-9" data-date="2026-10-25">第 3 天 · 约下次</a></div></div><div class="cgroup" data-date="2026-10-20"><b>第一次见面</b><div class="clinks"><a href="#day-4" data-date="2026-10-20">第 1 天 · 打招呼</a><a href="#day-5" data-date="2026-10-21">第 2 天 · 聊几句</a><a href="#day-6" data-date="2026-10-22">第 3 天 · 留联系方式</a></div></div><div class="cgroup" data-date="2026-10-17"><b>超市</b><div class="clinks"><a href="#day-1" data-date="2026-10-17">第 1 天 · 找东西</a><a href="#day-2" data-date="2026-10-18">第 2 天 · 结账</a><a href="#day-3" data-date="2026-10-19">第 3 天 · 熟食柜和退货</a></div></div></details>
-  <footer>更新于 2026-10-20</footer>
+  <footer>更新于 2026-10-22</footer>
 </div>
 <script id="phrase-data" type="application/json">{"15": [{"en": "I'd like to fill this prescription, please.", "zh": "我想拿这张处方上的药。", "a": "audio/f36b0fd0dba3.mp3"}, {"en": "How often should I take it?", "zh": "这个多久吃一次？", "a": "audio/eb010e7d7989.mp3"}, {"en": "Take two tablets twice a day with food.", "zh": "一天两次，每次两片，饭后吃。", "a": "audio/12ebca25edcf.mp3"}, {"en": "Do you have anything for a sore throat?", "zh": "有治嗓子疼的药吗？", "a": "audio/1fdb0b188be8.mp3"}, {"en": "Are there any side effects?", "zh": "有什么副作用吗？", "a": "audio/c7c2f340f3eb.mp3"}, {"en": "Can I get a receipt, please?", "zh": "可以给我一张小票吗？", "a": "audio/22bff49f3eea.mp3"}], "14": [{"en": "I've had a sore throat for three days.", "zh": "我嗓子疼三天了。", "a": "audio/80035dcf11b2.mp3"}, {"en": "I've got a bit of a fever.", "zh": "我有点发烧。", "a": "audio/aa0cb0f128c9.mp3"}, {"en": "It hurts when I swallow.", "zh": "咽东西的时候疼。", "a": "audio/0badf27f0cdd.mp3"}, {"en": "I've been coughing a lot at night.", "zh": "晚上咳得很厉害。", "a": "audio/80e41875462a.mp3"}, {"en": "Am I contagious?", "zh": "我会传染给别人吗？", "a": "audio/a94e9b029ed5.mp3"}, {"en": "How long will it take to get better?", "zh": "多久能好？", "a": "audio/fc47ddf6a41b.mp3"}], "13": [{"en": "I'd like to make an appointment, please.", "zh": "我想预约一下。", "a": "audio/5f17a08edd4a.mp3"}, {"en": "Do you have anything available today?", "zh": "今天还有空位吗？", "a": "audio/b2ae1910e126.mp3"}, {"en": "Is the morning or afternoon better?", "zh": "上午好还是下午好？", "a": "audio/e1ee9f6600ed.mp3"}, {"en": "The afternoon works for me.", "zh": "下午我可以。", "a": "audio/1d93477df8d1.mp3"}, {"en": "Is this your first visit?", "zh": "你是第一次来吗？", "a": "audio/ca1459297e02.mp3"}, {"en": "Do you bulk bill?", "zh": "你们直接用 Medicare 结算吗？", "a": "audio/c1a0e5e9ab85.mp3"}], "12": [{"en": "Can we pay at the counter?", "zh": "我们可以去柜台付吗？", "a": "audio/836aa6190932.mp3"}, {"en": "Can we split the bill?", "zh": "我们可以分开付吗？", "a": "audio/2074ddc4b6ae.mp3"}, {"en": "I'll pay by card.", "zh": "我刷卡。", "a": "audio/df2280f7ae98.mp3"}, {"en": "I'll get this one.", "zh": "这次我请。", "a": "audio/fa1b8bcbf0b5.mp3"}, {"en": "Is there a surcharge?", "zh": "要加收手续费吗？", "a": "audio/fa882c5e8751.mp3"}, {"en": "No receipt, thanks.", "zh": "不用小票，谢谢。", "a": "audio/7125f4f8eca6.mp3"}], "11": [{"en": "What would you recommend?", "zh": "你推荐什么？", "a": "audio/4014e1fa3b05.mp3"}, {"en": "I'll have the smashed avo on toast.", "zh": "我要牛油果吐司。", "a": "audio/16a2a246311c.mp3"}, {"en": "Does this have any nuts in it?", "zh": "这个里面有坚果吗？", "a": "audio/c5d354893246.mp3"}, {"en": "I'm allergic to peanuts.", "zh": "我对花生过敏。", "a": "audio/8f62e5699a44.mp3"}, {"en": "Can I have it without onion?", "zh": "可以不要洋葱吗？", "a": "audio/4e0acab8ffed.mp3"}, {"en": "Could we get some water, please?", "zh": "可以给我们一些水吗？", "a": "audio/beb004997ebe.mp3"}], "10": [{"en": "Can I get a large flat white, please?", "zh": "我要一杯大杯馥芮白。", "a": "audio/f3d98ac463d2.mp3"}, {"en": "Have here or takeaway?", "zh": "在这儿喝还是带走？", "a": "audio/7129f4fc49a2.mp3"}, {"en": "Takeaway, thanks.", "zh": "带走，谢谢。", "a": "audio/dba91604f690.mp3"}, {"en": "Could I have that with oat milk?", "zh": "可以换成燕麦奶吗？", "a": "audio/bc00fac7d9bd.mp3"}, {"en": "What name is it under?", "zh": "写什么名字？", "a": "audio/757a5ae2e8fc.mp3"}, {"en": "Just a long black, thanks.", "zh": "就要一杯美式，谢谢。", "a": "audio/6cd3ebdef95f.mp3"}], "9": [{"en": "Are you free this Saturday?", "zh": "你这周六有空吗？", "a": "audio/c8c1590a1cb7.mp3"}, {"en": "How about brunch at that new café?", "zh": "去那家新开的咖啡馆吃早午饭怎么样？", "a": "audio/433800c1cc12.mp3"}, {"en": "What time suits you?", "zh": "你几点方便？", "a": "audio/fc52ba41907d.mp3"}, {"en": "Sorry, I can't make it on Saturday.", "zh": "不好意思，周六我去不了。", "a": "audio/4b75ba5611db.mp3"}, {"en": "Can we do Sunday instead?", "zh": "改到周日可以吗？", "a": "audio/77262de7415f.mp3"}, {"en": "Sounds good, see you then!", "zh": "好呀，到时见！", "a": "audio/c62363894636.mp3"}], "8": [{"en": "What did you get up to on the weekend?", "zh": "你周末干嘛了？", "a": "audio/8791b3a71fbb.mp3"}, {"en": "I went to the beach with some friends.", "zh": "我和几个朋友去海边了。", "a": "audio/a69e91fc2d78.mp3"}, {"en": "I didn't do much. I just stayed home.", "zh": "没干什么，就在家待着。", "a": "audio/9995ac1f5647.mp3"}, {"en": "It was so relaxing.", "zh": "特别放松。", "a": "audio/6c955c9230c8.mp3"}, {"en": "We had dinner at a Thai place.", "zh": "我们去一家泰国餐馆吃了晚饭。", "a": "audio/2cc509b5bebd.mp3"}, {"en": "How was yours?", "zh": "你的呢？", "a": "audio/54a1e0eb754a.mp3"}], "7": [{"en": "Long time no see!", "zh": "好久不见！", "a": "audio/0dc902dd3cc1.mp3"}, {"en": "How have you been?", "zh": "你最近怎么样？", "a": "audio/e06a5d35c4e2.mp3"}, {"en": "I've been really busy with work.", "zh": "我最近工作特别忙。", "a": "audio/03d069adb92c.mp3"}, {"en": "Not much, same old.", "zh": "没什么，老样子。", "a": "audio/231aed04d92b.mp3"}, {"en": "I moved house last month.", "zh": "我上个月搬家了。", "a": "audio/7f2a763cc03b.mp3"}, {"en": "We should catch up properly soon.", "zh": "我们改天好好聚聚。", "a": "audio/02a5c0e85892.mp3"}], "6": [{"en": "It was great chatting with you!", "zh": "跟你聊天很开心！", "a": "audio/5891ad2db8cb.mp3"}, {"en": "Are you on WhatsApp?", "zh": "你用 WhatsApp 吗？", "a": "audio/d37f33544645.mp3"}, {"en": "What's your number? I'll text you.", "zh": "你号码多少？我发短信给你。", "a": "audio/eaef87e6a7d0.mp3"}, {"en": "Let's grab a coffee sometime.", "zh": "改天一起喝杯咖啡吧。", "a": "audio/7e65d333432a.mp3"}, {"en": "I'd better get going.", "zh": "我得走了。", "a": "audio/40a89b37a29e.mp3"}, {"en": "See you around!", "zh": "回头见！", "a": "audio/cb265be0cb5c.mp3"}], "5": [{"en": "So, what do you do?", "zh": "你是做什么工作的？", "a": "audio/df4c35f6c962.mp3"}, {"en": "I work in marketing. / I'm an accountant.", "zh": "我做市场营销。/ 我是会计。", "a": "audio/f4274df2c15c.mp3"}, {"en": "Where are you from originally?", "zh": "你老家是哪里的？", "a": "audio/35fba0bdaad4.mp3"}, {"en": "I'm from Chengdu, in the southwest of China.", "zh": "我来自成都，在中国西南。", "a": "audio/f8cd5f6de2f9.mp3"}, {"en": "How long have you been here?", "zh": "你来这里多久了？", "a": "audio/3741f8e8e7be.mp3"}, {"en": "That sounds interesting!", "zh": "听起来挺有意思的！", "a": "audio/b923cd57eef3.mp3"}], "4": [{"en": "Hi, I'm Lin. Nice to meet you.", "zh": "你好，我是 Lin，很高兴认识你。", "a": "audio/191101695296.mp3"}, {"en": "Sorry, what was your name again?", "zh": "不好意思，你刚说你叫什么来着？", "a": "audio/37315b02c138.mp3"}, {"en": "How do you spell that?", "zh": "这个怎么拼？", "a": "audio/087bab7fe0a1.mp3"}, {"en": "You can call me Lin.", "zh": "你可以叫我 Lin。", "a": "audio/d083b6aacfd5.mp3"}, {"en": "How do you know Sarah?", "zh": "你是怎么认识 Sarah 的？", "a": "audio/f2e9ce602faf.mp3"}, {"en": "Lovely to meet you too.", "zh": "我也很高兴认识你。", "a": "audio/d50163cf4734.mp3"}], "3": [{"en": "Can I get 200 grams of ham, thanks?", "zh": "我要 200 克火腿，谢谢。", "a": "audio/83e73fec17cc.mp3"}, {"en": "Shaved, please.", "zh": "要刨片的。", "a": "audio/9c1c68a3a932.mp3"}, {"en": "That's it, thanks.", "zh": "就这些，谢谢。", "a": "audio/4bb5e98ef840.mp3"}, {"en": "Hi, I'd like to return this.", "zh": "你好，我想退这个。", "a": "audio/c3a1e7fb6903.mp3"}, {"en": "The milk had gone off when I opened it.", "zh": "这奶我打开的时候已经坏了。", "a": "audio/1289766a0c5b.mp3"}, {"en": "Could I swap it for a new one?", "zh": "能换一瓶新的吗？", "a": "audio/2d762921637a.mp3"}], "2": [{"en": "No, I'm right for a bag, thanks.", "zh": "不用袋子，谢谢。", "a": "audio/abd7588fdf09.mp3"}, {"en": "Do you have an Everyday Rewards card?", "zh": "你有会员卡吗？", "a": "audio/0e56e6447456.mp3"}, {"en": "Just tap here when you're ready.", "zh": "准备好了就在这里刷卡。", "a": "audio/8ca8151422e1.mp3"}, {"en": "Can I pay by card?", "zh": "可以刷卡吗？", "a": "audio/28e80faf47e8.mp3"}, {"en": "Would you like the receipt?", "zh": "要小票吗？", "a": "audio/8cf94f8d0da3.mp3"}, {"en": "Nah, that's fine, thanks.", "zh": "不用了，谢谢。", "a": "audio/6206b8704e2f.mp3"}], "1": [{"en": "Sorry, where would I find the oat milk?", "zh": "不好意思，燕麦奶在哪儿？", "a": "audio/329ab5385f9a.mp3"}, {"en": "Which aisle is the rice in?", "zh": "米在几号通道？", "a": "audio/978204b079d2.mp3"}, {"en": "Do you guys have any fresh coriander?", "zh": "你们有新鲜香菜吗？", "a": "audio/90421cf8e88e.mp3"}, {"en": "Are you out of eggs?", "zh": "鸡蛋卖完了吗？", "a": "audio/d21fb075d0f6.mp3"}, {"en": "It's just down there, on your left.", "zh": "就在那边，左手边。", "a": "audio/ab937e3e5a40.mp3"}, {"en": "No worries, thanks!", "zh": "好的，谢谢！", "a": "audio/8ae9bb11a9ae.mp3"}]}</script>
 <script>
@@ -807,11 +817,29 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     return p.then(function (d) { saveSession(d); return d.access_token; });
   }
   function fmt(iso) { var d = new Date(iso); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  // replies she has not seen yet show at the very top until she taps 知道了
+  function renderInbox(rows) {
+    var seen = store('seen-replies') || [];
+    var fresh = rows.filter(function (r) { return r.reply && seen.indexOf(r.id) < 0; });
+    var box = document.getElementById('inbox');
+    if (!fresh.length) { box.hidden = true; return; }
+    box.innerHTML = '<h2>你有 ' + fresh.length + ' 条新回复</h2>' + fresh.map(function (r) {
+      return '<div class="item"><span class="when">第 ' + r.day + ' 课 · 你写的：</span><div class="mine-text">' + esc(r.text) + '</div><div class="reply-text"><b>回复</b>' + esc(r.reply) + '</div></div>';
+    }).join('') + '<button class="gotit" type="button">知道了</button>';
+    box.hidden = false;
+    box.querySelector('.gotit').onclick = function () {
+      store('seen-replies', seen.concat(fresh.map(function (r) { return r.id; })));
+      box.hidden = true;
+      document.querySelectorAll('.answer.fresh').forEach(function (a) { a.classList.remove('fresh'); });
+    };
+  }
   function renderMine(rows) {
+    renderInbox(rows);
+    var seenIds = store('seen-replies') || [];
     document.querySelectorAll('.mine').forEach(function (box) {
       var day = Number(box.getAttribute('data-day'));
       box.innerHTML = rows.filter(function (r) { return r.day === day; }).map(function (r) {
-        return '<div class="answer"><span class="when">' + fmt(r.created_at) + ' 提交</span><div class="text">' + esc(r.text) + '</div>' +
+        return '<div class="answer' + (r.reply && seenIds.indexOf(r.id) < 0 ? ' fresh' : '') + '"><span class="when">' + fmt(r.created_at) + ' 提交</span><div class="text">' + esc(r.text) + '</div>' +
           (r.reply ? '<div class="reply"><b>回复</b>' + esc(r.reply) + '</div>' : '<span class="waiting">已收到，等回复中</span>') + '</div>';
       }).join('');
     });
