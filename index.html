@@ -154,6 +154,8 @@ nav a.done span::after { content: " ✓"; color: var(--gum) }
 .rec svg { width: 16px; height: 16px }
 .rec.on { background: var(--bad); border-color: var(--bad); color: #fbfcfa }
 @media (prefers-reduced-motion: no-preference) { .rec.on { animation: pulse 1s infinite } @keyframes pulse { 50% { opacity: .6 } } }
+.sendrec { border: 1px solid var(--gum); background: var(--gum-soft); color: var(--gum); border-radius: 999px; padding: 0 12px; height: 36px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap }
+.sendrec:disabled { opacity: .6; cursor: default }
 .recmsg { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 999px; font-size: 14px; z-index: 20; max-width: calc(100% - 32px); text-align: center }
 .announce { background: var(--gum-soft); border: 2px solid var(--gum); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px }
 .announce h2 { margin: 0; font-size: 18px; color: var(--gum) }
@@ -175,8 +177,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   </header>
   <section class="inbox" id="inbox" hidden aria-live="polite"></section>
   <section class="announce" id="announce" hidden>
-    <h2>新功能：录音对比</h2>
-    <p>每句话旁边多了一个<b>话筒</b>按钮。点一下开始录，读完再点一下，会先放你自己读的，再放标准发音，对比着听哪里不一样。录音只存在你的手机上，不会上传。</p>
+    <h2>新功能：录音可以提交了</h2>
+    <p>每句话旁边有个<b>话筒</b>：点一下开始录，读完再点一下，会先放你读的，再放标准发音，对比着听。</p>
+    <p>录完话筒旁边会出现<b>“提交录音”</b>。想让我听听哪里读得不准，就点它，回复会出现在那一课下面，和写作的回复一样。不点就不上传，录音只留在你手机上。</p>
     <p class="small">第一次用会问能不能使用麦克风，选“允许”。如果在微信里点了没反应，点右上角“…”，选“在浏览器打开”。</p>
     <button class="gotit" type="button" id="announce-ok">知道了</button>
   </section>
@@ -1128,7 +1131,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     var box = document.getElementById('inbox');
     if (!fresh.length) { box.hidden = true; return; }
     box.innerHTML = '<h2>你有 ' + fresh.length + ' 条新回复</h2>' + fresh.map(function (r) {
-      return '<div class="item"><span class="when">第 ' + r.day + ' 课 · 你写的：</span><div class="mine-text">' + esc(r.text) + '</div><div class="reply-text"><b>回复</b>' + esc(r.reply) + '</div></div>';
+      return '<div class="item"><span class="when">第 ' + r.day + ' 课 · ' + (r.kind === 'speak' ? '你读的' : '你写的') + '：</span><div class="mine-text">' + esc(r.text) + '</div><div class="reply-text"><b>回复</b>' + esc(r.reply) + '</div></div>';
     }).join('') + '<button class="gotit" type="button">知道了</button>';
     box.hidden = false;
     box.querySelector('.gotit').onclick = function () {
@@ -1143,7 +1146,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     document.querySelectorAll('.mine').forEach(function (box) {
       var day = Number(box.getAttribute('data-day'));
       box.innerHTML = rows.filter(function (r) { return r.day === day; }).map(function (r) {
-        return '<div class="answer' + (r.reply && seenIds.indexOf(r.id) < 0 ? ' fresh' : '') + '"><span class="when">' + fmt(r.created_at) + ' 提交</span><div class="text">' + esc(r.text) + '</div>' +
+        return '<div class="answer' + (r.reply && seenIds.indexOf(r.id) < 0 ? ' fresh' : '') + '"><span class="when">' + fmt(r.created_at) + (r.kind === 'speak' ? ' 提交的录音' : ' 提交') + '</span><div class="text">' + (r.kind === 'speak' ? '🎤 ' : '') + esc(r.text) + '</div>' +
           (r.reply ? '<div class="reply"><b>回复</b>' + esc(r.reply) + '</div>' : '<span class="waiting">已收到，等回复中</span>') + '</div>';
       }).join('');
     });
@@ -1151,7 +1154,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   function loadMine() {
     return token(false).then(function (t) {
       if (!t) return;
-      return retry(function () { return api('/rest/v1/submissions?select=id,day,text,created_at,reply&order=created_at.asc', { token: t }); }).then(renderMine);
+      return retry(function () { return api('/rest/v1/submissions?select=id,day,text,kind,created_at,reply&order=created_at.asc', { token: t }); }).then(renderMine);
     }).catch(function () {});
   }
   function submitAnswer(btn) {
@@ -1173,7 +1176,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   loadMine();
   document.addEventListener('visibilitychange', function () { if (!document.hidden) loadMine(); });
   // record and compare: she records herself, hears her take, then the model recording.
-  // Recordings stay in this page only; nothing is uploaded.
+  // A take stays on the phone unless she taps 提交录音, which uploads it for a spoken-answer reply.
   var MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
   var recMsg = document.createElement('div'); recMsg.className = 'recmsg'; recMsg.hidden = true; recMsg.setAttribute('aria-live', 'polite'); document.body.appendChild(recMsg);
   var msgTimer = null;
@@ -1204,7 +1207,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
         clearTimeout(recording && recording.timer);
         btn.classList.remove('on'); recording = null;
         if (!chunks.length) { note('没录到声音，再试一次'); return; }
-        var url = URL.createObjectURL(new Blob(chunks, { type: chunks[0].type || type || 'audio/webm' }));
+        var blob = new Blob(chunks, { type: chunks[0].type || type || 'audio/webm' });
+        var url = URL.createObjectURL(blob);
+        offerSend(btn, blob);
         var mine = new Audio(url);
         var sayBtn = btn.parentNode.querySelector('.say');
         note('先听你的录音……', true);
@@ -1219,7 +1224,41 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
       note(err && err.name === 'NotAllowedError' ? '需要允许使用麦克风才能录音。可以在浏览器设置里打开。' : '打不开麦克风。点右上角，选“在浏览器打开”再试。');
     });
   }
+  function offerSend(recBtn, blob) {
+    var send = recBtn.parentNode.querySelector('.sendrec');
+    if (!send) { send = document.createElement('button'); send.type = 'button'; send.className = 'sendrec'; recBtn.parentNode.appendChild(send); }
+    send.textContent = '提交录音'; send.disabled = false; send._blob = blob;
+  }
+  function userId(t) {
+    try { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; } catch (e) { return null; }
+  }
+  function sendRecording(send) {
+    var blob = send._blob, sayBtn = send.parentNode.querySelector('.say'), lesson = send.closest('details.lesson');
+    if (!blob || !lesson) return;
+    var mime = (blob.type || 'audio/webm').split(';')[0], ext = { 'audio/mp4': 'm4a', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3' }[mime] || 'webm';
+    send.disabled = true; send.textContent = '提交中…';
+    var t;
+    token(true).then(function (tok) {
+      t = tok;
+      var path = userId(t) + '/' + Date.now() + '.' + ext;
+      return retry(function () {
+        return fetch(SB + '/storage/v1/object/recordings/' + path, { method: 'POST', headers: { apikey: SBK, Authorization: 'Bearer ' + t, 'Content-Type': mime }, body: blob })
+          .then(function (r) { if (!r.ok) { var err = new Error('http ' + r.status); err.status = r.status; throw err; } return path; });
+      });
+    }).then(function (path) {
+      return retry(function () { return api('/rest/v1/submissions', { method: 'POST', token: t, prefer: 'return=minimal', body: { day: Number(lesson.id.slice(4)), text: sayBtn.getAttribute('data-say'), kind: 'speak', audio: path } }); });
+    }).then(function () {
+      send.textContent = '已提交 ✓'; send._blob = null;
+      note('录音提交了，回复会出现在这一课下面');
+      return loadMine();
+    }).catch(function () {
+      send.disabled = false; send.textContent = '提交录音';
+      note('没提交上，网络不好的话等会儿再试');
+    });
+  }
   document.addEventListener('click', function (ev) {
+    var s = ev.target.closest('.sendrec');
+    if (s) { if (!s.disabled) sendRecording(s); return; }
     var r = ev.target.closest('.rec');
     if (!r) return;
     if (recording && recording.btn === r) { stopRecording(); return; }
@@ -1228,7 +1267,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   });
   addRecButtons(document);
   // one-off feature announcement; bump the key when announcing something new
-  var ANN_KEY = 'seen-announce-rec-1029';
+  var ANN_KEY = 'seen-announce-sendrec-1029';
   if (!store(ANN_KEY)) document.getElementById('announce').hidden = false;
   document.getElementById('announce-ok').onclick = function () { store(ANN_KEY, true); document.getElementById('announce').hidden = true; };
   // progress, kept on this device only
