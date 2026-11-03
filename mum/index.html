@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>每天学一点英语</title>
+<style>
+:root { --ink:#1f2a24; --muted:#5d6a62; --paper:#fbfaf5; --card:#fff; --line:#dcd9cc; --green:#2c6e49; --soft:#e6f1ea; --red:#b3392f }
+[hidden] { display:none !important }
+* { box-sizing:border-box } body { margin:0; background:var(--paper); color:var(--ink); font:19px/1.6 -apple-system,"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif }
+.wrap { max-width:560px; margin:0 auto; padding:18px 16px 60px; display:grid; gap:16px }
+h1 { margin:0; font-size:27px } h2 { margin:0; font-size:22px } p { margin:0 } .muted { color:var(--muted) }
+.days { display:flex; flex-wrap:wrap; gap:8px } .days button { min-width:52px; height:48px; border:1px solid var(--line); background:var(--card); border-radius:12px; font:inherit; color:var(--ink) }
+.days button.on { background:var(--green); color:#fff; border-color:var(--green) } .days button.done::after { content:" ✓" }
+.card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; display:grid; gap:10px }
+.en { font-size:27px; font-weight:700; line-height:1.3 } .zh { font-size:20px } .hint { color:var(--muted); font-size:17px }
+.btns { display:flex; flex-wrap:wrap; gap:10px } .btns button, .big { min-height:54px; padding:0 18px; border-radius:14px; border:1px solid var(--green); background:var(--card); color:var(--green); font:inherit; font-weight:700 }
+.btns .listen, .big { background:var(--green); color:#fff } .btns .rec.on { background:var(--red); border-color:var(--red); color:#fff } .btns .send { background:var(--soft) } button:disabled { opacity:.6 }
+.note { background:var(--soft); border-radius:14px; padding:14px 16px } .reply { background:var(--soft); border-radius:10px; padding:10px 12px }
+.msg { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:var(--ink); color:var(--paper); padding:12px 18px; border-radius:999px; width:max-content; max-width:calc(100% - 32px); text-align:center; z-index:5 }
+.inbox { background:#fff6d9; border:2px solid #d9a400; border-radius:16px; padding:14px 16px; display:grid; gap:10px }
+button:focus-visible { outline:3px solid #d9a400; outline-offset:2px }
+</style></head><body><div class="wrap">
+<header><h1>每天学一点英语</h1><p class="muted">不用写字，听一听，跟着说。说错了没关系。</p></header>
+<section class="inbox" id="inbox" hidden></section>
+<div class="days" id="days" role="group" aria-label="选择第几天"></div>
+<main id="main" style="display:grid;gap:16px"></main>
+</div>
+<script id="data" type="application/json">[{"title": "打招呼", "tip": "今天只学打招呼和说谢谢。见到人先笑一笑，说一句就很好了。", "say": [["Hello.", "你好。", "哈喽", "audio/b11f6d4921c0.mp3"], ["Thank you.", "谢谢。", "三Q，舌头轻轻碰一下牙", "audio/e2e6c652f541.mp3"], ["Goodbye.", "再见。", "古德拜", "audio/4e5270b4ce68.mp3"]]}, {"title": "要和不要", "tip": "别人问你要不要什么，这两句都够用。", "say": [["Yes, please.", "好的，请给我。", "耶斯，普力斯", "audio/eb816b677a3a.mp3"], ["No, thanks.", "不用了，谢谢。", "诺，三克斯", "audio/84527b5cb739.mp3"], ["Excuse me.", "劳驾，打扰一下。", "伊克斯Q斯 密", "audio/08c616841d86.mp3"]]}, {"title": "听不懂怎么办", "tip": "听不懂很正常，大大方方说出来，对方会放慢的。", "say": [["Sorry, I don't speak English.", "对不起，我不会说英语。", "搜瑞，爱 咚特 斯必克 英格利什", "audio/b7af4dc5c859.mp3"], ["Slowly, please.", "请说慢一点。", "斯楼利，普力斯", "audio/ab3088e0b926.mp3"]]}, {"title": "上厕所和喝水", "tip": "出门最常用的两句。Where is 就是“在哪里”。", "say": [["Where is the toilet?", "厕所在哪里？", "歪尔 意思 德 托一雷特", "audio/f003b2fc625b.mp3"], ["Water, please.", "请给我水。", "沃特，普力斯", "audio/9b93068a0603.mp3"]]}, {"title": "过海关", "tip": "过海关时对方会问你来做什么。说这两句，再把护照和家人的地址拿给他看。", "say": [["I'm visiting my family.", "我来看家人。", "爱姆 维泽听 买 伐密利", "audio/ac2a8f0ea2aa.mp3"], ["One month.", "一个月。按你实际要住多久来换。", "万 忙斯", "audio/6b9453804a28.mp3"]]}, {"title": "需要帮忙", "tip": "找不到路就找穿制服的工作人员，给对方看手机上家人的电话。", "say": [["Can you help me?", "你能帮帮我吗？", "看 优 海尔普 密", "audio/002009c4738f.mp3"], ["I'm lost.", "我迷路了。", "爱姆 落斯特", "audio/2e8317e68bb6.mp3"], ["Please call my family.", "请给我家人打电话。", "普力斯 扣 买 伐密利", "audio/f228b36f1a05.mp3"]]}, {"title": "复习", "tip": "今天没有新句子。把这一周的句子再听一遍，挑你最想会的三句多说几遍。", "say": [["Hello.", "你好。", "哈喽", "audio/b11f6d4921c0.mp3"], ["Thank you.", "谢谢。", "三Q，舌头轻轻碰一下牙", "audio/e2e6c652f541.mp3"], ["Sorry, I don't speak English.", "对不起，我不会说英语。", "搜瑞，爱 咚特 斯必克 英格利什", "audio/b7af4dc5c859.mp3"], ["Where is the toilet?", "厕所在哪里？", "歪尔 意思 德 托一雷特", "audio/f003b2fc625b.mp3"], ["I'm visiting my family.", "我来看家人。", "爱姆 维泽听 买 伐密利", "audio/ac2a8f0ea2aa.mp3"], ["Can you help me?", "你能帮帮我吗？", "看 优 海尔普 密", "audio/002009c4738f.mp3"]]}]</script>
+<script>
+(function () {
+  var DAYS = JSON.parse(document.getElementById('data').textContent), SB = 'https://rrmfujomfedxxnchfcgi.supabase.co', SBK = 'sb_publishable_Jlfc5BOhR-UtmNmNc_FdjA_MImfGAfW';
+  function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem('mum-' + k)); localStorage.setItem('mum-' + k, JSON.stringify(v)); } catch (e) { return null; } }
+  function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+  var msgEl = document.createElement('div'); msgEl.className = 'msg'; msgEl.hidden = true; msgEl.setAttribute('aria-live', 'polite'); document.body.appendChild(msgEl);
+  var timer; function note(t, keep) { msgEl.textContent = t; msgEl.hidden = false; clearTimeout(timer); if (!keep) timer = setTimeout(function () { msgEl.hidden = true; }, 4000); }
+  var player = new Audio();
+  function play(src, rate) { player.src = src; player.playbackRate = rate || 1; return player.play().catch(function () { note('放不出声音，看看手机音量'); }); }
+  // same anonymous sign-in and tables as the main course, marked course = 'mum'
+  function api(path, o) { o = o || {}; var h = { apikey: SBK, 'Content-Type': 'application/json' }; if (o.token) h.Authorization = 'Bearer ' + o.token; if (o.prefer) h.Prefer = o.prefer;
+    return fetch(SB + path, { method: o.method || 'GET', headers: h, body: o.body ? JSON.stringify(o.body) : undefined, cache: 'no-store' }).then(function (r) { return r.text().then(function (t) { if (!r.ok) { var e = new Error('http'); e.status = r.status; throw e; } return t ? JSON.parse(t) : null; }); }); }
+  function retry(fn) { return fn().catch(function (e) { if (e.status && e.status < 500) throw e; return new Promise(function (r) { setTimeout(r, 1500); }).then(fn); }); }
+  function token(create) { var s = store('session'), save = function (d) { store('session', { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() / 1000 + (d.expires_in || 3600) }); return d.access_token; };
+    if (s && s.expires_at - 60 > Date.now() / 1000) return Promise.resolve(s.access_token);
+    if (s && s.refresh_token) return retry(function () { return api('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: s.refresh_token } }); }).then(save);
+    if (!create) return Promise.resolve(null);
+    return retry(function () { return api('/auth/v1/signup', { method: 'POST', body: {} }); }).then(save); }
+  function uid(t) { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; }
+  var rows = [];
+  function loadMine() { return token(false).then(function (t) { if (!t) return; return retry(function () { return api('/rest/v1/submissions?select=id,day,text,reply&course=eq.mum&order=created_at.asc', { token: t }); }).then(function (r) { rows = r; renderInbox(); showReplies(); }); }).catch(function () {}); }
+  function renderInbox() { var seen = store('seen') || [], fresh = rows.filter(function (r) { return r.reply && seen.indexOf(r.id) < 0; }), box = document.getElementById('inbox');
+    box.hidden = !fresh.length; if (!fresh.length) return;
+    box.innerHTML = '<h2>有 ' + fresh.length + ' 条新回复</h2>' + fresh.map(function (r) { return '<div><b>' + esc(r.text) + '</b><br>' + esc(r.reply) + '</div>'; }).join('') + '<button class="big" type="button" id="seen">知道了</button>';
+    document.getElementById('seen').onclick = function () { store('seen', seen.concat(fresh.map(function (r) { return r.id; }))); box.hidden = true; }; }
+  function showReplies() { document.querySelectorAll('[data-replies]').forEach(function (b) { var en = b.getAttribute('data-replies'); b.innerHTML = rows.filter(function (r) { return r.text === en && r.reply; }).map(function (r) { return '<div class="reply">' + esc(r.reply) + '</div>'; }).join(''); }); }
+  var done = store('done') || [], cur = 0;
+  while (cur < DAYS.length - 1 && done.indexOf(cur) >= 0) cur++;
+  function render() {
+    document.getElementById('days').innerHTML = DAYS.map(function (d, i) { return '<button type="button" data-day="' + i + '" class="' + (i === cur ? 'on ' : '') + (done.indexOf(i) >= 0 ? 'done' : '') + '" aria-label="第 ' + (i + 1) + ' 天">' + (i + 1) + '</button>'; }).join('');
+    var d = DAYS[cur];
+    document.getElementById('main').innerHTML = '<div class="note"><h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2><p>' + esc(d.tip) + '</p></div>' +
+      d.say.map(function (s, i) { return '<section class="card" data-i="' + i + '"><div class="en">' + esc(s[0]) + '</div><div class="zh">' + esc(s[1]) + '</div><div class="hint">大概读音：' + esc(s[2]) + '（以录音为准）</div>' +
+        '<div class="btns"><button type="button" class="listen">听</button><button type="button" class="slow">慢一点</button><button type="button" class="rec">跟着说</button></div><div data-replies="' + esc(s[0]).replace(/"/g, '&quot;') + '"></div></section>'; }).join('') +
+      '<button class="big" type="button" id="finish">' + (done.indexOf(cur) >= 0 ? '今天学完了 ✓' : '今天学完了') + '</button>';
+    showReplies(); window.scrollTo(0, 0);
+  }
+  var recording = null;
+  function stopRec() { if (recording && recording.r.state !== 'inactive') recording.r.stop(); }
+  function startRec(btn, s) {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder)) { note('这个浏览器录不了音，换手机自带的浏览器试试'); return; }
+    player.pause();
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      var type = ['audio/webm', 'audio/mp4', 'audio/ogg'].filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0];
+      var r = type ? new MediaRecorder(stream, { mimeType: type }) : new MediaRecorder(stream), chunks = [];
+      r.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      r.onstop = function () { stream.getTracks().forEach(function (t) { t.stop(); }); clearTimeout(recording.timer); recording = null; btn.classList.remove('on'); btn.textContent = '跟着说';
+        if (!chunks.length) { note('没录到声音，再试一次'); return; }
+        var blob = new Blob(chunks, { type: chunks[0].type || type || 'audio/webm' }), mine = new Audio(URL.createObjectURL(blob));
+        var send = btn.parentNode.querySelector('.send'); if (!send) { send = document.createElement('button'); send.type = 'button'; send.className = 'send'; btn.parentNode.appendChild(send); }
+        send.textContent = '发给孩子听听'; send.disabled = false; send._blob = blob; send._en = s[0];
+        note('先听你说的…', true); mine.onended = function () { note('再听标准的'); play(s[3]); }; mine.play().catch(function () { play(s[3]); }); };
+      recording = { r: r, timer: setTimeout(stopRec, 12000) }; r.start(); btn.classList.add('on'); btn.textContent = '说完点这里'; note('正在录，说完再点一下', true);
+    }).catch(function () { note('要允许使用麦克风才能录。手机弹窗时选“允许”。'); });
+  }
+  function sendRec(b) { var mime = (b._blob.type || 'audio/webm').split(';')[0], ext = { 'audio/mp4': 'm4a', 'audio/ogg': 'ogg' }[mime] || 'webm', t, day = cur + 1; b.disabled = true; b.textContent = '发送中…';
+    token(true).then(function (tok) { t = tok; var path = uid(t) + '/' + Date.now() + '.' + ext; return retry(function () { return fetch(SB + '/storage/v1/object/recordings/' + path, { method: 'POST', headers: { apikey: SBK, Authorization: 'Bearer ' + t, 'Content-Type': mime }, body: b._blob }).then(function (r) { if (!r.ok) { var e = new Error('http'); e.status = r.status; throw e; } return path; }); }); })
+    .then(function (path) { return retry(function () { return api('/rest/v1/submissions', { method: 'POST', token: t, prefer: 'return=minimal', body: { day: day, text: b._en, kind: 'speak', audio: path, course: 'mum' } }); }); })
+    .then(function () { b.textContent = '发过去了 ✓'; note('发过去了，回复会出现在这句下面'); return loadMine(); })
+    .catch(function () { b.disabled = false; b.textContent = '发给孩子听听'; note('没发出去，等网好一点再试'); }); }
+  document.addEventListener('click', function (ev) {
+    var dayBtn = ev.target.closest('[data-day]'); if (dayBtn) { stopRec(); cur = Number(dayBtn.getAttribute('data-day')); render(); return; }
+    if (ev.target.id === 'finish') { if (done.indexOf(cur) < 0) { done.push(cur); store('done', done); } note('今天学完了，真棒！'); render(); return; }
+    var card = ev.target.closest('.card'); if (!card) return; var s = DAYS[cur].say[Number(card.getAttribute('data-i'))], c = ev.target.classList;
+    if (c.contains('listen')) play(s[3]); else if (c.contains('slow')) play(s[3], 0.7);
+    else if (c.contains('rec')) { if (recording) stopRec(); else startRec(ev.target, s); }
+    else if (c.contains('send')) sendRec(ev.target);
+  });
+  render(); loadMine();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) loadMine(); });
+})();
+</script></body></html>
