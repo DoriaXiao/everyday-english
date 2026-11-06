@@ -89,7 +89,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
       return retry(function () { return api('/rest/v1/rpc/join_family', { method: 'POST', token: t, body: fresh ? { p_code: f || DEFAULT_FAMILY } : {} }); })
         .then(function (info) { return info || fresh ? info : api('/rest/v1/rpc/join_family', { method: 'POST', token: t, body: { p_code: fam.code } }); })
         .then(function (info) { if (!info) return; var changed = info.who !== fam.who || info.stay !== fam.stay; fam = info; store('family', info); if (changed) DAYS = resolve(RAW);
-          return recover(t).then(function (moved) { if (moved) { cur = firstOpen(); openDay(cur); } else if (changed) openDay(cur); }); });
+          return recover(t).then(function (moved) { if (moved) { cur = firstOpen(); openDay(cur); } else if (changed) openDay(cur, pos); }); });
     }).catch(function () {}); }
   function recover(t) { if (log.length) return Promise.resolve(false);
     return api('/rest/v1/checkins?select=day,on_date&course=eq.mum&order=on_date.asc', { token: t }).then(function (r) { if (!r || !r.length) return false;
@@ -123,12 +123,14 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
       st.push({ t: 'quiz', q: q, right: right, opts: shuffle([right].concat(others), r) }); });
     st.push({ t: 'talk' }, { t: 'end' }); return st; }
 
-  var done = store('done') || [], cur = 0, steps = [], pos = 0, items = [];
+  // where she was (day and step) is kept on the phone, so leaving WeChat or a reload does not start the day over
+  var done = store('done') || [], at = store('at'), cur = 0, steps = [], pos = 0, items = [];
   while (cur < DAYS.length - 1 && done.indexOf(cur) >= 0) cur++;
+  if (at && DAYS[at.day] && done.indexOf(at.day) < 0) cur = at.day; else at = null;
   function sayBlock(s) { return '<div class="en">' + esc(s[0]) + '</div><div class="zh">' + esc(s[1]) + '</div><div class="hint">大概读音：' + esc(s[2]) + '（以录音为准）</div>' +
     '<div class="btns"><button type="button" class="listen">听</button><button type="button" class="slow">慢一点</button><button type="button" class="rec">跟着说</button></div><div data-replies="' + esc(s[0]).replace(/"/g, '&quot;') + '"></div>'; }
   function card(s, before) { return '<section class="card" data-i="' + (items.push(s) - 1) + '">' + (before || '') + sayBlock(s) + '</section>'; }
-  function openDay(i) { stopAll(); cur = i; steps = stepsFor(i); pos = 0; render(); }
+  function openDay(i, p) { stopAll(); cur = i; steps = stepsFor(i); pos = Math.min(p || 0, steps.length - 1); render(); }
   function render() {
     document.getElementById('days').innerHTML = DAYS.map(function (d, i) { return '<button type="button" data-day="' + i + '" class="' + (i === cur ? 'on ' : '') + (done.indexOf(i) >= 0 ? 'done' : '') + '" aria-label="第 ' + (i + 1) + ' 天">' + (i + 1) + '</button>'; }).join('');
     var d = DAYS[cur], s = steps[pos], body; items = [];
@@ -142,21 +144,23 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     else if (s.t === 'talk') body = '<section class="card"><div class="kind">小对话</div>' + d.talk.map(function (l) {
         return '<div class="line ' + l[0] + '"><div class="who">' + (l[0] === 'me' ? '你' : '对方') + '</div><div class="en">' + esc(l[1]) + '</div><div class="zh">' + esc(l[2]) + '</div></div>'; }).join('') +
       '<div class="btns"><button type="button" class="listen" id="talk-all">听整段</button><button type="button" id="talk-me">我来演「你」</button></div><p class="hint">先听几遍整段，再点「我来演」：对方说完，轮到你时停下来，你自己说。</p></section>';
-    else body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2><p class="muted">' + (done.indexOf(cur) >= 0 ? '这一课已经打过卡了。想多练就点上面的数字再来一遍。' : '点下面的按钮打卡，孩子能看到你今天学了。') + '</p>' +
-      '<button class="big" type="button" id="finish">' + (done.indexOf(cur) >= 0 ? '再打一次卡 ✓' : '打卡：今天学完了') + '</button></section>';
+    else body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2><p class="zh">已经打卡了 ✓ 孩子能看到你今天学了。</p><p class="muted">想多练，就点上面的数字再来一遍。</p>' +
+      (cur < DAYS.length - 1 ? '<button class="big" type="button" id="nextday">接着学第 ' + (cur + 2) + ' 天</button>' : '') + '</section>';
     document.getElementById('main').innerHTML = (pos === 0 ? '<div class="note"><h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2><p>' + esc(d.tip) + '</p></div>' : '<h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2>') +
       '<div><div class="bar"><i style="width:' + Math.round((pos + 1) / steps.length * 100) + '%"></i></div><p class="muted" style="font-size:16px;margin-top:4px">第 ' + (pos + 1) + ' 步，一共 ' + steps.length + ' 步</p></div>' + body +
       (s.t === 'end' ? (pos ? '<div class="nav"><button class="big back" type="button" id="prev">上一个</button></div>' : '') : '<div class="nav">' + (pos ? '<button class="big back" type="button" id="prev">上一个</button>' : '<span></span>') + '<button class="big" type="button" id="next">下一个</button></div>');
     var on = document.querySelector('.days .on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
-    showReplies(); window.scrollTo(0, 0);
+    showReplies(); window.scrollTo(0, 0); store('at', { day: cur, pos: pos });
   }
-  function go(k) { stopAll(); pos = k; render(); var s = steps[pos];
+  // reaching the last step is the check-in: no button to forget
+  function finish() { if (done.indexOf(cur) < 0) { done.push(cur); store('done', done); } checkIn(cur + 1); note('打卡了，真棒！'); }
+  function go(k) { stopAll(); pos = k; if (steps[pos].t === 'end') finish(); render(); var s = steps[pos];
     if (s.t === 'review' || s.t === 'say') play(s.s[3]); else if (s.t === 'hear') play(s.h.q[2]); else if (s.t === 'quiz' && s.picked === undefined) play(s.q[2]); }
 
   var recording = null;
   function stopRec() { if (recording && recording.r.state !== 'inactive') recording.r.stop(); }
   function startRec(btn, s) {
-    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder)) { note('这个浏览器录不了音，换手机自带的浏览器试试'); return; }
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder)) { note('录不了也没关系，跟着大声说就行'); return; }
     seq++; clearLine(); player.pause();
     navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
       var type = ['audio/webm', 'audio/mp4', 'audio/ogg'].filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0];
@@ -169,7 +173,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
         send.textContent = '发给孩子听听'; send.disabled = false; send._blob = blob; send._en = s[0];
         note('先听你说的…', true); mine.onended = function () { note('再听标准的'); play(s[3]); }; mine.play().catch(function () { play(s[3]); }); };
       recording = { r: r, timer: setTimeout(stopRec, 12000) }; r.start(); btn.classList.add('on'); btn.textContent = '说完点这里'; note('正在录，说完再点一下', true);
-    }).catch(function () { note('要允许使用麦克风才能录。手机弹窗时选“允许”。'); });
+    }).catch(function () { note('录不了也没关系，跟着大声说就行。想录的话，手机问能不能用麦克风时选“允许”。'); });
   }
   function sendRec(b) { var mime = (b._blob.type || 'audio/webm').split(';')[0], ext = { 'audio/mp4': 'm4a', 'audio/ogg': 'ogg' }[mime] || 'webm', t, day = cur + 1; b.disabled = true; b.textContent = '发送中…';
     token(true).then(function (tok) { t = tok; var path = uid(t) + '/' + Date.now() + '.' + ext; return retry(function () { return fetch(SB + '/storage/v1/object/recordings/' + path, { method: 'POST', headers: { apikey: SBK, Authorization: 'Bearer ' + t, 'Content-Type': mime }, body: b._blob }).then(function (r) { if (!r.ok) { var e = new Error('http'); e.status = r.status; throw e; } return path; }); }); })
@@ -180,7 +184,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     var dayBtn = ev.target.closest('[data-day]'); if (dayBtn) { openDay(Number(dayBtn.getAttribute('data-day'))); return; }
     var id = ev.target.id;
     if (id === 'next') { go(pos + 1); return; } if (id === 'prev') { go(pos - 1); return; }
-    if (id === 'finish') { if (done.indexOf(cur) < 0) { done.push(cur); store('done', done); } checkIn(cur + 1); note('打卡成功，真棒！'); render(); return; }
+    if (id === 'nextday') { openDay(cur + 1); return; }
     if (id === 'talk-all' || id === 'talk-me') { runTalk(id === 'talk-me'); return; }
     var opt = ev.target.closest('[data-opt]'); if (opt) { var s = steps[pos]; if (s.picked === undefined) { s.picked = opt.getAttribute('data-opt'); render(); if (s.picked !== s.right) play(s.q[2]); } return; }
     var ra = ev.target.getAttribute('data-ra'); if (ra) { playStored(ra); return; }
@@ -190,7 +194,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     else if (cl.contains('rec')) { if (recording) stopRec(); else startRec(ev.target, it); }
     else if (cl.contains('send')) sendRec(ev.target);
   });
-  openDay(cur); renderLog(); setupFamily().then(function () { loadMine(); flush(); });
+  openDay(cur, at && at.pos); renderLog(); setupFamily().then(function () { loadMine(); flush(); });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { loadMine(); flush(); } });
 })();
 </script></body></html>
