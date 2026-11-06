@@ -53,7 +53,7 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
   var PRIVACY = '<p class="muted small">爸妈的录音和打卡只有你能看到、听到。网站管理员也能看到这些记录，平时只看统计（比如多少人在学、学到第几天），用来改进课程。</p>';
 
   function renderCreate() {
-    document.getElementById('app').innerHTML = '<h1>爸妈的英语课</h1><p class="muted">给零基础、要出国探亲的爸妈：每天十几分钟，只听和说，不用写字。你在这里看他们每天学了没有，听他们的录音，回一句话或一段语音。</p>' +
+    document.getElementById('app').innerHTML = '<h1>爸妈的英语课</h1><p class="muted">给零基础、要来澳洲探亲的爸妈：每天十几分钟，只听和说，不用写字。你在这里看他们每天学了没有，听他们的录音，回一句话或一段语音。</p>' +
       '<section class="card">' + settingsForm({ parent_name: '妈妈', who: 'family', stay: '1m' }) + '<button class="btn main" type="button" id="create">创建，拿到发给爸妈的链接</button></section>' + PRIVACY;
   }
   function render() {
@@ -62,10 +62,10 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
     var fresh = !dates.length && !recs.length;
     document.getElementById('app').innerHTML = '<h1>' + name + '的英语课</h1>' +
       '<section class="card' + (fresh ? ' hi' : '') + '"><h2>把这个链接发给' + name + '</h2><p class="link">' + esc(parentLink()) + '</p><div class="row"><button class="btn main" type="button" data-copy="p">复制链接</button></div>' +
-        '<p class="muted small">用微信发过去，' + name + '点开就能学，不用注册。</p></section>' +
+        '<p class="muted small">复制的内容会带一句怎么用。用微信发过去，' + name + '点开就能学，不用注册。</p></section>' +
       '<section class="card"><h2>' + name + '的打卡</h2>' + (dates.length ? '<p>一共学了 <b>' + dates.length + '</b> 天，最近一次：' + fmt(dates[0]) + '，第 ' + days[dates[0]].join('、') + ' 天的课。</p>' +
           '<details><summary>每天学了哪一课</summary><ul class="muted">' + dates.map(function (d) { return '<li>' + fmt(d) + '：第 ' + days[d].map(function (n) { return n + ' 天（' + esc(TITLES[n - 1] || '') + '）'; }).join('、') + '</li>'; }).join('') + '</ul></details>'
-        : '<p class="muted">还没有打卡。' + name + '每天学完点「打卡」，这里就会出现。</p>') + '</section>' +
+        : '<p class="muted">还没有打卡。' + name + '每学完一天的课会自动打卡，这里就会出现。</p>') + '</section>' +
       '<section class="card"><h2>' + name + '的录音' + (todo ? ' <span class="tag">' + todo + ' 条没回</span>' : '') + '</h2>' + (recs.length ? recs.map(recCard).join('') : '<p class="muted">还没有录音。' + name + '跟读时点「发给孩子听听」，录音会出现在这里。</p>') + '</section>' +
       '<details class="card"><summary>设置</summary>' + settingsForm(fam) + '<button class="btn" type="button" id="save">保存</button>' +
         '<p class="muted small">你自己的链接（换手机时打开它，别发给别人）：</p><p class="link">' + esc(myLink()) + '</p><div class="row"><button class="btn" type="button" data-copy="k">复制我的链接</button></div></details>' + PRIVACY;
@@ -112,7 +112,7 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
   document.addEventListener('click', function (ev) { var t = ev.target;
     if (t.id === 'create') { t.disabled = true; rpc('create_family', readSettings()).then(function (f) { fam = f; store('family', f); history.replaceState(null, '', 'kid.html?k=' + f.child_key); load(); }).catch(function () { t.disabled = false; note('没建成，等网好一点再试'); }); return; }
     if (t.id === 'save') { rpc('update_family', readSettings()).then(function (f) { fam = f; store('family', f); render(); note('保存好了'); }).catch(function () { note('没保存上，再试一次'); }); return; }
-    var c = t.getAttribute('data-copy'); if (c) { var txt = c === 'p' ? parentLink() : myLink();
+    var c = t.getAttribute('data-copy'); if (c) { var txt = c === 'p' ? (fam.parent_name || '妈妈') + '，这是学英语的小课，点开就能学，不用注册：\n' + parentLink() + '\n每次打开，一直点「下一个」，点到最后就学完了。' : myLink();
       (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () { note('复制好了，去微信粘贴'); }, function () { note('复制不了，长按上面的链接复制'); }); return; }
     var p = t.getAttribute('data-play'); if (p) { stored(p).then(function (b) { play(URL.createObjectURL(b)); }).catch(function () { note('放不出来，等网好一点再试'); }); return; }
     var m = t.getAttribute('data-model'); if (m) { play(m); return; }
