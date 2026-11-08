@@ -42,7 +42,7 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
     return retry(function () { return api('/auth/v1/signup', { method: 'POST', body: {} }); }).then(save); }
   function uid(t) { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; }
   function rpc(name, body) { return token().then(function (t) { return retry(function () { return api('/rest/v1/rpc/' + name, { method: 'POST', token: t, body: body || {} }); }); }); }
-  var base = location.href.split('?')[0].replace(/kid\.html$/, ''), fam = null, subs = [], checks = [];
+  var base = location.href.split('?')[0].replace(/kid\.html$/, ''), fam = null, subs = [], checks = [], members = [];
   function parentLink() { return base + '?f=' + fam.code; }
   function myLink() { return base + 'kid.html?k=' + fam.child_key; }
   function options(map, sel) { return Object.keys(map).map(function (k) { return '<option value="' + k + '"' + (k === sel ? ' selected' : '') + '>' + map[k] + '</option>'; }).join(''); }
@@ -56,31 +56,42 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
     document.getElementById('app').innerHTML = '<h1>爸妈的英语课</h1><p class="muted">给零基础、要来澳洲探亲的爸妈：每天十几分钟，只听和说，不用写字。你在这里看他们每天学了没有，听他们的录音，回一句话或一段语音。</p>' +
       '<section class="card">' + settingsForm({ parent_name: '妈妈', who: 'family', stay: '1m' }) + '<button class="btn main" type="button" id="create">创建，拿到发给爸妈的链接</button></section>' + PRIVACY;
   }
+  // a family can have several parents (mum and dad): each phone has a name (members.name, or the family's
+  // parent_name when it has none). One name: the page looks as before. Several: check-ins per person, and
+  // each recording says whose it is.
+  function people() { var out = [fam.parent_name]; members.forEach(function (m) { if (m.role === 'learner') { var n = m.name || fam.parent_name; if (out.indexOf(n) < 0) out.push(n); } }); return out; }
+  function whoOf(id) { var m = members.filter(function (x) { return x.user_id === id; })[0]; return (m && m.name) || fam.parent_name; }
+  function checkCard(who, list) { var name = esc(who), days = {}; list.forEach(function (c) { (days[c.on_date] = days[c.on_date] || []).push(c.day); });
+    var dates = Object.keys(days).sort().reverse();
+    return '<section class="card"><h2>' + name + '的打卡</h2>' + (dates.length ? '<p>一共学了 <b>' + dates.length + '</b> 天，最近一次：' + fmt(dates[0]) + '，第 ' + days[dates[0]].join('、') + ' 天的课。</p>' +
+        '<details><summary>每天学了哪一课</summary><ul class="muted">' + dates.map(function (d) { return '<li>' + fmt(d) + '：第 ' + days[d].map(function (n) { return n + ' 天（' + esc(TITLES[n - 1] || '') + '）'; }).join('、') + '</li>'; }).join('') + '</ul></details>'
+      : '<p class="muted">还没有打卡。' + name + '每学完一天的课会自动打卡，这里就会出现。</p>') + '</section>'; }
   function render() {
-    var name = esc(fam.parent_name), days = {}; checks.forEach(function (c) { (days[c.on_date] = days[c.on_date] || []).push(c.day); });
-    var dates = Object.keys(days).sort().reverse(), recs = subs.filter(function (s) { return s.kind === 'speak'; }).reverse(), todo = recs.filter(function (s) { return !s.reply; }).length;
-    var fresh = !dates.length && !recs.length;
-    document.getElementById('app').innerHTML = '<h1>' + name + '的英语课</h1>' +
+    var ps = people(), multi = ps.length > 1, all = esc(ps.join('和')), name = esc(fam.parent_name);
+    var recs = subs.filter(function (s) { return s.kind === 'speak'; }).reverse(), todo = recs.filter(function (s) { return !s.reply; }).length;
+    var fresh = !checks.length && !recs.length;
+    document.getElementById('app').innerHTML = '<h1>' + all + '的英语课</h1>' +
       '<section class="card' + (fresh ? ' hi' : '') + '"><h2>把这个链接发给' + name + '</h2><p class="link">' + esc(parentLink()) + '</p><div class="row"><button class="btn main" type="button" data-copy="p">复制链接</button></div>' +
-        '<p class="muted small">复制的内容会带一句怎么用。用微信发过去，' + name + '点开就能学，不用注册。</p></section>' +
-      '<section class="card"><h2>' + name + '的打卡</h2>' + (dates.length ? '<p>一共学了 <b>' + dates.length + '</b> 天，最近一次：' + fmt(dates[0]) + '，第 ' + days[dates[0]].join('、') + ' 天的课。</p>' +
-          '<details><summary>每天学了哪一课</summary><ul class="muted">' + dates.map(function (d) { return '<li>' + fmt(d) + '：第 ' + days[d].map(function (n) { return n + ' 天（' + esc(TITLES[n - 1] || '') + '）'; }).join('、') + '</li>'; }).join('') + '</ul></details>'
-        : '<p class="muted">还没有打卡。' + name + '每学完一天的课会自动打卡，这里就会出现。</p>') + '</section>' +
-      '<section class="card"><h2>' + name + '的录音' + (todo ? ' <span class="tag">' + todo + ' 条没回</span>' : '') + '</h2>' + (recs.length ? recs.map(recCard).join('') : '<p class="muted">还没有录音。' + name + '跟读时点「发给孩子听听」，录音会出现在这里。</p>') + '</section>' +
+        '<p class="muted small">复制的内容会带一句怎么用。用微信发过去，' + name + '点开就能学，不用注册。</p>' +
+        '<details><summary>还要发给别的家人？</summary><p class="muted small">每人一个链接，各自的打卡和录音会分开显示。写上你怎么称呼 TA，再复制发过去。</p>' +
+          '<label>怎么称呼<input id="o-name" maxlength="10" placeholder="比如：爸爸"></label><div class="row"><button class="btn" type="button" data-copy="o">复制给 TA 的链接</button></div></details></section>' +
+      ps.map(function (p) { return checkCard(p, checks.filter(function (c) { return whoOf(c.user_id) === p; })); }).join('') +
+      '<section class="card"><h2>' + all + '的录音' + (todo ? ' <span class="tag">' + todo + ' 条没回</span>' : '') + '</h2>' + (recs.length ? recs.map(function (s) { return recCard(s, multi); }).join('') : '<p class="muted">还没有录音。' + all + '跟读时点「发给孩子听听」，录音会出现在这里。</p>') + '</section>' +
       '<details class="card"><summary>设置</summary>' + settingsForm(fam) + '<button class="btn" type="button" id="save">保存</button>' +
         '<p class="muted small">你自己的链接（换手机时打开它，别发给别人）：</p><p class="link">' + esc(myLink()) + '</p><div class="row"><button class="btn" type="button" data-copy="k">复制我的链接</button></div></details>' + PRIVACY;
   }
   function fmt(d) { return Number(d.slice(5, 7)) + ' 月 ' + Number(d.slice(8)) + ' 日'; }
-  function recCard(s) { var when = new Date(s.created_at);
-    return '<div class="rec" data-id="' + s.id + '"><div class="row"><span class="muted small">第 ' + s.day + ' 天 · ' + (when.getMonth() + 1) + ' 月 ' + when.getDate() + ' 日</span>' + (s.reply ? '' : '<span class="tag">没回</span>') + '</div>' +
-      '<div class="en">' + esc(s.text) + '</div><div class="row"><button class="btn main" type="button" data-play="' + esc(s.audio) + '">听' + esc(fam.parent_name) + '读的</button>' + (MODEL[s.text] ? '<button class="btn" type="button" data-model="' + esc(MODEL[s.text]) + '">听标准读音</button>' : '') + '</div>' +
+  function recCard(s, multi) { var when = new Date(s.created_at), who = whoOf(s.user_id);
+    return '<div class="rec" data-id="' + s.id + '" data-who="' + esc(who) + '"><div class="row"><span class="muted small">' + (multi ? esc(who) + ' · ' : '') + '第 ' + s.day + ' 天 · ' + (when.getMonth() + 1) + ' 月 ' + when.getDate() + ' 日</span>' + (s.reply ? '' : '<span class="tag">没回</span>') + '</div>' +
+      '<div class="en">' + esc(s.text) + '</div><div class="row"><button class="btn main" type="button" data-play="' + esc(s.audio) + '">听' + esc(who) + '读的</button>' + (MODEL[s.text] ? '<button class="btn" type="button" data-model="' + esc(MODEL[s.text]) + '">听标准读音</button>' : '') + '</div>' +
       (s.reply ? '<div class="reply">你回复：' + esc(s.reply) + (s.reply_audio ? ' <button class="btn" type="button" data-play="' + esc(s.reply_audio) + '">听我的语音</button>' : '') + '</div>'
         : '<textarea placeholder="写一句，比如：读得很好！thank 的舌头再伸出来一点"></textarea><div class="row"><button class="btn" type="button" data-rec>录一段语音</button><button class="btn main" type="button" data-send>发送</button></div>') + '</div>'; }
 
   function load() { return token().then(function (t) { return Promise.all([
-      api('/rest/v1/submissions?select=id,day,text,kind,audio,reply,reply_audio,created_at&course=eq.mum&order=created_at.asc', { token: t }),
-      api('/rest/v1/checkins?select=day,on_date&course=eq.mum&order=on_date.asc', { token: t })]); })
-    .then(function (r) { subs = r[0] || []; checks = r[1] || []; render(); }).catch(function () { render(); note('没连上，等网好一点再刷新'); }); }
+      api('/rest/v1/submissions?select=id,user_id,day,text,kind,audio,reply,reply_audio,created_at&course=eq.mum&order=created_at.asc', { token: t }),
+      api('/rest/v1/checkins?select=user_id,day,on_date&course=eq.mum&order=on_date.asc', { token: t }),
+      api('/rest/v1/rpc/family_members', { method: 'POST', token: t, body: {} }).catch(function () { return []; })]); })
+    .then(function (r) { subs = r[0] || []; checks = r[1] || []; members = r[2] || []; render(); }).catch(function () { render(); note('没连上，等网好一点再刷新'); }); }
   function stored(path) { return token().then(function (t) { return fetch(SB + '/storage/v1/object/authenticated/recordings/' + path, { headers: { apikey: SBK, Authorization: 'Bearer ' + t } }); })
     .then(function (r) { if (!r.ok) throw new Error('http'); return r.blob(); }); }
 
@@ -106,13 +117,14 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
       if (blob) { var mime = (blob.type || 'audio/webm').split(';')[0], path = uid(t) + '/reply-' + Date.now() + '.' + ({ 'audio/mp4': 'm4a', 'audio/ogg': 'ogg' }[mime] || 'webm');
         up = retry(function () { return fetch(SB + '/storage/v1/object/recordings/' + path, { method: 'POST', headers: { apikey: SBK, Authorization: 'Bearer ' + t, 'Content-Type': mime }, body: blob }).then(function (r) { if (!r.ok) { var e = new Error('http'); e.status = r.status; throw e; } return path; }); }); }
       return up.then(function (path) { return retry(function () { return api('/rest/v1/submissions?id=eq.' + id, { method: 'PATCH', token: t, prefer: 'return=representation', body: { reply: text || '（语音回复）', replied_at: new Date().toISOString(), reply_audio: path } }); }); });
-    }).then(function (r) { if (!r || !r.length) throw new Error('none'); note('发过去了，' + fam.parent_name + '打开页面就能看到'); return load(); })
+    }).then(function (r) { if (!r || !r.length) throw new Error('none'); note('发过去了，' + (card.getAttribute('data-who') || fam.parent_name) + '打开页面就能看到'); return load(); })
       .catch(function () { btn.disabled = false; btn.textContent = '发送'; note('没发出去，再试一次'); }); }
 
   document.addEventListener('click', function (ev) { var t = ev.target;
     if (t.id === 'create') { t.disabled = true; rpc('create_family', readSettings()).then(function (f) { fam = f; store('family', f); history.replaceState(null, '', 'kid.html?k=' + f.child_key); load(); }).catch(function () { t.disabled = false; note('没建成，等网好一点再试'); }); return; }
     if (t.id === 'save') { rpc('update_family', readSettings()).then(function (f) { fam = f; store('family', f); render(); note('保存好了'); }).catch(function () { note('没保存上，再试一次'); }); return; }
-    var c = t.getAttribute('data-copy'); if (c) { var txt = c === 'p' ? (fam.parent_name || '妈妈') + '，这是学英语的小课，点开就能学，不用注册：\n' + parentLink() + '\n每次打开，一直点「下一个」，点到最后就学完了。' : myLink();
+    var c = t.getAttribute('data-copy'); if (c) { var other = c === 'o' ? document.getElementById('o-name').value.trim().slice(0, 10) : ''; if (c === 'o' && !other) { note('先写上怎么称呼 TA'); return; }
+      var txt = c === 'k' ? myLink() : (other || fam.parent_name || '妈妈') + '，这是学英语的小课，点开就能学，不用注册：\n' + parentLink() + (other ? '&n=' + encodeURIComponent(other) : '') + '\n每次打开，一直点「下一个」，点到最后就学完了。';
       (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () { note('复制好了，去微信粘贴'); }, function () { note('复制不了，长按上面的链接复制'); }); return; }
     var p = t.getAttribute('data-play'); if (p) { stored(p).then(function (b) { play(URL.createObjectURL(b)); }).catch(function () { note('放不出来，等网好一点再试'); }); return; }
     var m = t.getAttribute('data-model'); if (m) { play(m); return; }
@@ -125,6 +137,6 @@ details summary { cursor:pointer; font-weight:700 } button:focus-visible, summar
     else if (saved && saved.child_key) rpc('join_family', { p_child_key: saved.child_key }).then(function (f2) { if (f2) { fam = f2; load(); } else renderCreate(); });
     else renderCreate();
   }).catch(function () { document.getElementById('app').innerHTML = '<p class="muted">没连上，等网好一点再刷新。</p>'; });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden && fam && !recording && ![].some.call(document.querySelectorAll('textarea'), function (x) { return x.value.trim(); })) load(); });  // never wipe a half-written reply
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && fam && !recording && ![].some.call(document.querySelectorAll('textarea, #o-name'), function (x) { return x.value.trim(); })) load(); });  // never wipe a half-written reply
 })();
 </script></body></html>

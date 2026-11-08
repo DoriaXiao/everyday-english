@@ -71,7 +71,11 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     return retry(function () { return api('/auth/v1/signup', { method: 'POST', body: {} }); }).then(save); }
   function uid(t) { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub; }
   var rows = [];
-  function loadMine() { return token(false).then(function (t) { if (!t) return; return retry(function () { return api('/rest/v1/submissions?select=id,day,text,reply,reply_audio&course=eq.mum&order=created_at.asc', { token: t }); }).then(function (r) { rows = r; renderInbox(); showReplies(); }); }).catch(function () {}); }
+  // this person's phones: this one plus any other phone in the family with the same name (a new phone for the same parent)
+  function myIds(t) { return api('/rest/v1/rpc/family_members', { method: 'POST', token: t, body: {} }).catch(function () { return []; }).then(function (ms) {
+    var me = fam.name || fam.parent_name, ids = [uid(t)]; (ms || []).forEach(function (m) { if (m.role === 'learner' && (m.name || fam.parent_name) === me) ids.push(m.user_id); }); return ids; }); }
+  function loadMine() { return token(false).then(function (t) { if (!t) return; return retry(function () { return Promise.all([api('/rest/v1/submissions?select=id,user_id,day,text,reply,reply_audio&course=eq.mum&order=created_at.asc', { token: t }), myIds(t)]); })
+    .then(function (res) { rows = (res[0] || []).filter(function (r) { return res[1].indexOf(r.user_id) >= 0; }); renderInbox(); showReplies(); }); }).catch(function () {}); }
   function renderInbox() { var seen = store('seen') || [], fresh = rows.filter(function (r) { return r.reply && seen.indexOf(r.id) < 0; }), box = document.getElementById('inbox');
     box.hidden = !fresh.length; if (!fresh.length) return;
     box.innerHTML = '<h2>有 ' + fresh.length + ' 条新回复</h2>' + fresh.map(function (r) { return '<div><b>' + esc(r.text) + '</b><br>' + esc(r.reply) + voiceBtn(r) + '</div>'; }).join('') + '<button class="big" type="button" id="seen">知道了</button>';
@@ -84,16 +88,21 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   // family: the link from the child carries ?f=<code>; the phone joins that family on first open. The plain
   // link without ?f is "learn on your own": no family, nothing leaves the phone (so a parent can forward it
   // to friends). If this phone has no progress (new phone, cleared browser), the family's check-ins bring it back.
-  var solo = !fam.code && !new URLSearchParams(location.search).get('f');
-  function setupFamily() { if (solo) return Promise.resolve(); var f = new URLSearchParams(location.search).get('f'), fresh = !fam.code || (f && f !== fam.code);
+  // A family can have several parents (mum and dad): the link may carry ?n=<name>, saved on the server for
+  // this phone so the child sees who learned what. No name means the family's parent_name.
+  var params = new URLSearchParams(location.search), nm = (params.get('n') || '').trim().slice(0, 10);
+  var solo = !fam.code && !params.get('f');
+  function setupFamily() { if (solo) return Promise.resolve(); var f = params.get('f'), fresh = !fam.code || (f && f !== fam.code), rename = nm && nm !== fam.name;
     return token(true).then(function (t) {
-      return retry(function () { return api('/rest/v1/rpc/join_family', { method: 'POST', token: t, body: fresh ? { p_code: f } : {} }); })
-        .then(function (info) { return info || fresh ? info : api('/rest/v1/rpc/join_family', { method: 'POST', token: t, body: { p_code: fam.code } }); })
+      return retry(function () { return api('/rest/v1/rpc/join_family', { method: 'POST', token: t, body: fresh || rename ? { p_code: f || fam.code, p_name: nm || null } : {} }); })
+        .then(function (info) { return info || fresh ? info : api('/rest/v1/rpc/join_family', { method: 'POST', token: t, body: { p_code: fam.code, p_name: fam.name || null } }); })
         .then(function (info) { if (!info) return; var changed = info.who !== fam.who || info.stay !== fam.stay; fam = info; store('family', info); if (changed) DAYS = resolve(RAW);
           return recover(t).then(function (moved) { if (moved) { cur = firstOpen(); openDay(cur); } else if (changed) openDay(cur, pos); }); });
     }).catch(function () {}); }
+  // only this person's check-ins (same name), not the other parent's
   function recover(t) { if (log.length) return Promise.resolve(false);
-    return api('/rest/v1/checkins?select=day,on_date&course=eq.mum&order=on_date.asc', { token: t }).then(function (r) { if (!r || !r.length) return false;
+    return Promise.all([api('/rest/v1/checkins?select=user_id,day,on_date&course=eq.mum&order=on_date.asc', { token: t }), myIds(t)]).then(function (res) {
+      var r = (res[0] || []).filter(function (c) { return res[1].indexOf(c.user_id) >= 0; }); if (!r.length) return false;
       r.forEach(function (c) { if (!log.some(function (x) { return x.date === c.on_date && x.day === c.day; })) log.push({ date: c.on_date, day: c.day }); if (done.indexOf(c.day - 1) < 0) done.push(c.day - 1); });
       store('log', log); store('done', done); renderLog(); return true; }).catch(function () { return false; }); }
   function firstOpen() { var i = 0; while (i < DAYS.length - 1 && done.indexOf(i) >= 0) i++; return i; }
