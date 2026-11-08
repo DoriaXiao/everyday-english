@@ -25,6 +25,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
 .opts button.right { border-color:var(--green); background:var(--soft) } .opts button.wrong { border-color:var(--red); background:var(--redsoft) }
 .log { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 14px } .log summary { font-weight:700; min-height:36px; display:flex; align-items:center; cursor:pointer }
 .log ul { margin:8px 0 0; padding-left:20px; color:var(--muted) }
+.log.todo { background:var(--yellow); border-color:#e8d48a } .log.ok { background:var(--soft); border-color:transparent } .log .small { font-size:16px; margin:4px 0 0 }
 .done-big { font-size:60px; text-align:center; line-height:1 }
 </style></head><body><div class="wrap">
 <header><h1>每天学一点英语</h1><p class="muted">不用写字，听一听，跟着说。说错了没关系。</p></header>
@@ -114,9 +115,14 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   function flush() { var pend = store('pending') || []; if (solo || !pend.length) return;  // on her own, check-ins wait on the phone
     token(true).then(function (t) { return retry(function () { return api('/rest/v1/checkins?on_conflict=user_id,course,day,on_date', { method: 'POST', token: t, prefer: 'resolution=ignore-duplicates,return=minimal', body: pend.map(function (c) { return { course: 'mum', day: c.day, on_date: c.date }; }) }); }); })
       .then(function () { var left = (store('pending') || []).filter(function (c) { return !pend.some(function (p) { return p.date === c.date && p.day === c.day; }); }); store('pending', left); }).catch(function () {}); }
+  // always visible, so a parent can see where check-in is: it happens by itself on the last step of a day
   function renderLog() { var el = document.getElementById('log'), dates = {}; log.forEach(function (c) { (dates[c.date] = dates[c.date] || []).push(c.day); });
-    var keys = Object.keys(dates).sort().reverse(); el.hidden = !keys.length; if (!keys.length) return; var open = el.open;
-    el.innerHTML = '<summary>打卡：已经学了 ' + keys.length + ' 天' + (dates[today()] ? '，今天打过卡了 ✓' : '') + '</summary><ul>' + keys.map(function (k) { return '<li>' + Number(k.slice(5, 7)) + ' 月 ' + Number(k.slice(8)) + ' 日：第 ' + dates[k].join('、') + ' 天的课</li>'; }).join('') + '</ul>'; el.open = open; }
+    var keys = Object.keys(dates).sort().reverse(), open = el.open, ok = !!dates[today()];
+    el.className = 'log' + (ok ? ' ok' : ' todo');
+    el.innerHTML = '<summary>' + (ok ? '今天打过卡了 ✓' : '今天还没打卡') + '</summary>' +
+      (ok ? '' : '<p class="small">一直点「下一个」，点到最后一步，就自动打卡了。</p>') +
+      (keys.length ? '<p class="small muted">一共学了 ' + keys.length + ' 天：</p><ul>' + keys.map(function (k) { return '<li>' + Number(k.slice(5, 7)) + ' 月 ' + Number(k.slice(8)) + ' 日：第 ' + dates[k].join('、') + ' 天的课</li>'; }).join('') + '</ul>' : '');
+    el.open = open || !ok; }
 
   // each day is a row of steps shown one at a time: review, say, questions, listening quiz, dialogue, done
   function strip(zh) { return zh.replace(/（.*?）/g, '').replace(/[。！]$/, ''); }
@@ -157,7 +163,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     else body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2><p class="zh">已经打卡了 ✓ ' + (solo ? '记在你的手机上。' : '孩子能看到你今天学了。') + '</p><p class="muted">想多练，就点上面的数字再来一遍。</p>' +
       (cur < DAYS.length - 1 ? '<button class="big" type="button" id="nextday">接着学第 ' + (cur + 2) + ' 天</button>' : '') + '</section>';
     document.getElementById('main').innerHTML = (pos === 0 ? '<div class="note"><h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2><p>' + esc(d.tip) + '</p></div>' : '<h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2>') +
-      '<div><div class="bar"><i style="width:' + Math.round((pos + 1) / steps.length * 100) + '%"></i></div><p class="muted" style="font-size:16px;margin-top:4px">第 ' + (pos + 1) + ' 步，一共 ' + steps.length + ' 步</p></div>' + body +
+      '<div><div class="bar"><i style="width:' + Math.round((pos + 1) / steps.length * 100) + '%"></i></div><p class="muted" style="font-size:16px;margin-top:4px">第 ' + (pos + 1) + ' 步，一共 ' + steps.length + ' 步' + (log.some(function (c) { return c.date === today(); }) ? '' : '，最后一步自动打卡') + '</p></div>' + body +
       (s.t === 'end' ? (pos ? '<div class="nav"><button class="big back" type="button" id="prev">上一个</button></div>' : '') : '<div class="nav">' + (pos ? '<button class="big back" type="button" id="prev">上一个</button>' : '<span></span>') + '<button class="big" type="button" id="next">下一个</button></div>');
     var on = document.querySelector('.days .on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
     showReplies(); window.scrollTo(0, 0); store('at', { day: cur, pos: pos });
