@@ -12,7 +12,7 @@ h1 { margin:0; font-size:27px } h2 { margin:0; font-size:22px } p { margin:0 } .
 .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; display:grid; gap:10px }
 .en { font-size:27px; font-weight:700; line-height:1.3 } .zh { font-size:20px } .hint { color:var(--muted); font-size:17px }
 .btns { display:flex; flex-wrap:wrap; gap:10px } .btns button, .big { min-height:54px; padding:0 18px; border-radius:14px; border:1px solid var(--green); background:var(--card); color:var(--green); font:inherit; font-weight:700 }
-.btns .listen, .big { background:var(--green); color:#fff } .btns .rec.on { background:var(--red); border-color:var(--red); color:#fff } .btns .send { background:var(--soft) } button:disabled { opacity:.6 }
+.btns .listen, .big { background:var(--green); color:#fff } .btns .rec.on, .btns .listen.on { background:var(--red); border-color:var(--red); color:#fff } .btns .send { background:var(--soft) } button:disabled { opacity:.6 }
 .note { background:var(--soft); border-radius:14px; padding:14px 16px; display:grid; gap:4px } .reply { background:var(--soft); border-radius:10px; padding:10px 12px }
 .msg { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:var(--ink); color:var(--paper); padding:12px 18px; border-radius:999px; width:max-content; max-width:calc(100% - 32px); text-align:center; z-index:5 }
 .inbox { background:var(--yellow); border:2px solid #d9a400; border-radius:16px; padding:14px 16px; display:grid; gap:10px }
@@ -49,12 +49,16 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   var timer; function note(t, keep) { msgEl.textContent = t; msgEl.hidden = false; clearTimeout(timer); if (!keep) timer = setTimeout(function () { msgEl.hidden = true; }, 4000); }
   var player = new Audio(), seq = 0;
   function soundErr(e) { if (!e || e.name !== 'AbortError') note('放不出声音，看看手机音量'); }  // AbortError = cut off by the next sound, not a fault
-  function play(src, rate) { seq++; clearLine(); player.onended = null; player.src = src; player.playbackRate = rate || 1; return player.play().catch(soundErr); }
-  function stopAll() { stopRec(); seq++; clearLine(); player.onended = null; player.pause(); }
+  // 听整段 repeats until she taps it again (it reads 停止 while playing); any other sound or step stops it
+  var looping = false;
+  function endLoop() { looping = false; var b = document.getElementById('talk-all'); if (b) { b.textContent = '听整段'; b.classList.remove('on'); } }
+  function play(src, rate) { endLoop(); seq++; clearLine(); player.onended = null; player.src = src; player.playbackRate = rate || 1; return player.play().catch(soundErr); }
+  function stopAll() { endLoop(); stopRec(); seq++; clearLine(); player.onended = null; player.pause(); }
   // dialogue: play the lines in turn; with mine = true her lines are left as a pause for her to say them
   function clearLine() { document.querySelectorAll('.line.now').forEach(function (l) { l.classList.remove('now'); }); }
   function runTalk(mine) { stopAll(); var my = seq, lines = DAYS[cur].talk, els = document.querySelectorAll('.line');
-    function step(j) { if (msgEl.textContent === '轮到你说了') msgEl.hidden = true; if (my !== seq) return; clearLine(); if (j >= lines.length) { note(mine ? '演完了，点「听整段」对一对' : '听完了'); return; }
+    if (!mine) { looping = true; var b = document.getElementById('talk-all'); if (b) { b.textContent = '停止'; b.classList.add('on'); } }
+    function step(j) { if (msgEl.textContent === '轮到你说了') msgEl.hidden = true; if (my !== seq) return; clearLine(); if (j >= lines.length) { if (!mine) { setTimeout(function () { if (my === seq) step(0); }, 1500); return; } note('演完了，点「听整段」对一对'); return; }
       els[j].classList.add('now'); var l = lines[j];
       if (mine && l[0] === 'me') { note('轮到你说了', true); setTimeout(function () { step(j + 1); }, 2500 + 700 * l[1].split(' ').length); return; }
       player.src = l[3]; player.playbackRate = 1; player.onended = function () { player.onended = null; setTimeout(function () { step(j + 1); }, 500); };
@@ -159,7 +163,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
       (s.picked !== undefined ? '<p class="zh">' + (s.picked === s.right ? '对了！' : '没关系，正确的是绿色那个。') + '英文是：<b>' + esc(s.q[0]) + '</b></p>' : '') + '</section>';
     else if (s.t === 'talk') body = '<section class="card"><div class="kind">小对话</div>' + d.talk.map(function (l) {
         return '<div class="line ' + l[0] + '"><div class="who">' + (l[0] === 'me' ? '你' : '对方') + '</div><div class="en">' + esc(l[1]) + '</div><div class="zh">' + esc(l[2]) + '</div></div>'; }).join('') +
-      '<div class="btns"><button type="button" class="listen" id="talk-all">听整段</button><button type="button" id="talk-me">我来演「你」</button></div><p class="hint">先听几遍整段，再点「我来演」：对方说完，轮到你时停下来，你自己说。</p></section>';
+      '<div class="btns"><button type="button" class="listen" id="talk-all">听整段</button><button type="button" id="talk-me">我来演「你」</button></div><p class="hint">先听几遍整段（会一直重复，听够了点「停止」），再点「我来演」：对方说完，轮到你时停下来，你自己说。</p></section>';
     else body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2><p class="zh">已经打卡了 ✓ ' + (solo ? '记在你的手机上。' : '孩子能看到你今天学了。') + '</p><p class="muted">想多练，就点上面的数字再来一遍。</p>' +
       (cur < DAYS.length - 1 ? '<button class="big" type="button" id="nextday">接着学第 ' + (cur + 2) + ' 天</button>' : '') + '</section>';
     document.getElementById('main').innerHTML = (pos === 0 ? '<div class="note"><h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2><p>' + esc(d.tip) + '</p></div>' : '<h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2>') +
@@ -201,6 +205,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     var id = ev.target.id;
     if (id === 'next') { go(pos + 1); return; } if (id === 'prev') { go(pos - 1); return; }
     if (id === 'nextday') { openDay(cur + 1); return; }
+    if (id === 'talk-all' && looping) { stopAll(); return; }
     if (id === 'talk-all' || id === 'talk-me') { runTalk(id === 'talk-me'); return; }
     var opt = ev.target.closest('[data-opt]'); if (opt) { var s = steps[pos]; if (s.picked === undefined) { s.picked = opt.getAttribute('data-opt'); render(); if (s.picked !== s.right) play(s.q[2]); } return; }
     var ra = ev.target.getAttribute('data-ra'); if (ra) { playStored(ra); return; }
