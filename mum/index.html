@@ -23,10 +23,16 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
 .nav { display:grid; grid-template-columns:1fr 2fr; gap:10px; position:sticky; bottom:0; z-index:4; background:var(--paper); margin:0 -16px; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); border-top:1px solid var(--line) } .nav .back { background:var(--card); color:var(--green) }
 .opts { display:grid; gap:10px } .opts button { min-height:58px; text-align:left; padding:10px 16px; border-radius:14px; border:2px solid var(--line); background:var(--card); font:inherit; color:var(--ink) }
 .opts button.right { border-color:var(--green); background:var(--soft) } .opts button.wrong { border-color:var(--red); background:var(--redsoft) }
-.log { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 14px } .log summary { font-weight:700; min-height:36px; display:flex; align-items:center; cursor:pointer }
+.log { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 14px } .log summary { font-weight:700; min-height:36px; display:flex; flex-wrap:wrap; align-items:baseline; gap:0 10px; cursor:pointer }
 .log ul { margin:8px 0 0; padding-left:20px; color:var(--muted) }
 .log.todo { background:var(--yellow); border-color:#e8d48a } .log.ok { background:var(--soft); border-color:transparent } .log .small { font-size:17px; margin:4px 0 0 }
 .done-big { font-size:60px; text-align:center; line-height:1 }
+.cal { display:flex; flex-direction:column; gap:6px; margin:10px 0 4px } .cal-sum { margin:6px 0 0; font-size:18px } .cal-head { display:flex; align-items:center; justify-content:center; gap:16px; font-size:19px }
+.cal-head button { min-width:48px; height:44px; border:1px solid var(--line); background:var(--card); border-radius:12px; font:inherit; font-size:24px; color:var(--green) } .cal-head button:disabled { opacity:.3 }
+.cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; text-align:center } .cal-grid.wk span { color:var(--muted); font-size:15px }
+.cal-grid span { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:17px; color:var(--muted) }
+.cal-grid span.on { background:var(--green); color:#fff; font-weight:700 } .cal-grid span.today { box-shadow:0 0 0 3px #d9a400 }
+.sum-note { font-weight:400; color:var(--muted); font-size:17px } .streak { font-size:24px; font-weight:700; color:var(--green) }
 .bg { background:var(--card); border:2px solid var(--green); border-radius:16px; padding:14px 16px; display:grid; gap:8px } .bg.on { background:var(--soft) }
 </style></head><body><div class="wrap">
 <section class="inbox" id="inbox" hidden></section>
@@ -141,12 +147,26 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   function flush() { var pend = store('pending') || []; if (solo || !pend.length) return;  // on her own, check-ins wait on the phone
     token(true).then(function (t) { return retry(function () { return api('/rest/v1/checkins?on_conflict=user_id,course,day,on_date', { method: 'POST', token: t, prefer: 'resolution=ignore-duplicates,return=minimal', body: pend.map(function (c) { return { course: 'mum', day: c.day, on_date: c.date }; }) }); }); })
       .then(function () { var left = (store('pending') || []).filter(function (c) { return !pend.some(function (p) { return p.date === c.date && p.day === c.day; }); }); store('pending', left); }).catch(function () {}); }
-  // always visible, so a parent can see where check-in is: it happens by itself on the last step of a day
-  function renderLog() { var el = document.getElementById('log'), dates = {}; log.forEach(function (c) { (dates[c.date] = dates[c.date] || []).push(c.day); });
-    var keys = Object.keys(dates).sort().reverse(), open = el.open, ok = !!dates[today()];
+  // always visible, so a parent can see where check-in is (it happens by itself on the last step of a day).
+  // Opened, it is a month calendar: every day she checked in is a green stamp, with her streak and totals.
+  function ymd(d) { var p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+  function logDates() { var set = {}; log.forEach(function (c) { set[c.date] = true; }); return set; }
+  function streak(set) { var d = new Date(); if (!set[ymd(d)]) d.setDate(d.getDate() - 1); var n = 0; while (set[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+  var calMonth = today().slice(0, 7);
+  function calHtml(month, set, nav) {
+    var y = +month.slice(0, 4), m = +month.slice(5, 7), first = new Date(y, m - 1, 1), n = new Date(y, m, 0).getDate(), lead = (first.getDay() + 6) % 7, t = today(), cells = '', inMonth = 0;
+    for (var k = 0; k < lead; k++) cells += '<span></span>';
+    for (var dd = 1; dd <= n; dd++) { var key = month + '-' + (dd < 10 ? '0' : '') + dd, on = !!set[key]; if (on) inMonth++;
+      cells += '<span class="' + (on ? 'on' : '') + (key === t ? ' today' : '') + '">' + dd + '</span>'; }
+    var first0 = Object.keys(set).sort()[0], canPrev = nav && first0 && first0.slice(0, 7) < month, canNext = nav && month < t.slice(0, 7);
+    return '<div class="cal"><div class="cal-head">' + (nav ? '<button type="button" data-cal="-1"' + (canPrev ? '' : ' disabled') + ' aria-label="上个月">‹</button>' : '') +
+      '<b>' + y + ' 年 ' + m + ' 月</b>' + (nav ? '<button type="button" data-cal="1"' + (canNext ? '' : ' disabled') + ' aria-label="下个月">›</button>' : '') + '</div>' +
+      '<div class="cal-grid wk"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>' +
+      '<div class="cal-grid">' + cells + '</div><p class="cal-sum">这个月打卡 <b>' + inMonth + '</b> 天</p></div>'; }
+  function renderLog() { var el = document.getElementById('log'), set = logDates(), total = Object.keys(set).length, open = el.open, ok = !!set[today()], run = streak(set);
     el.className = 'log' + (ok ? ' ok' : ' todo');
-    el.innerHTML = '<summary>' + (ok ? '今天打过卡了 ✓' : '今天还没打卡') + '</summary>' +
-      (keys.length ? '<p class="small muted">一共学了 ' + keys.length + ' 天：</p><ul>' + keys.map(function (k) { return '<li>' + Number(k.slice(5, 7)) + ' 月 ' + Number(k.slice(8)) + ' 日：第 ' + dates[k].join('、') + ' 天的课</li>'; }).join('') + '</ul>' : '');
+    el.innerHTML = '<summary>' + (ok ? '今天打过卡了 ✓' : '今天还没打卡') + (total ? '<span class="sum-note">' + (run > 1 ? '连续 ' + run + ' 天' : '一共 ' + total + ' 天') + ' · 点开看日历</span>' : '') + '</summary>' +
+      (total ? calHtml(calMonth, set, true) + '<p class="cal-sum">一共学了 <b>' + total + '</b> 天' + (run ? '，现在连续 <b>' + run + '</b> 天' : '') + '</p>' : '');
     el.open = open; }
 
   // each day is a row of steps shown one at a time: review, say, questions, listening quiz, dialogue, done
@@ -185,8 +205,8 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     else if (s.t === 'talk') body = '<section class="card"><div class="kind">小对话</div>' + '<div class="btns"><button type="button" class="listen" id="talk-all">听整段</button><button type="button" id="talk-me">我来演「你」</button></div><p class="hint">先听几遍整段（会一直重复，听够了点「停止」），再点「我来演」：对方说完，轮到你时停下来，你自己说。</p>' + d.talk.map(function (l) {
         return '<div class="line ' + l[0] + '"><div class="who">' + (l[0] === 'me' ? '你' : '对方') + '</div><div class="en">' + esc(l[1]) + '</div><div class="zh">' + esc(l[2]) + '</div></div>'; }).join('') +
       '</section>';
-    else body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2><p class="zh">已经打卡了 ✓ ' + (solo ? '记在你的手机上。' : '孩子能看到你今天学了。') + '</p><p class="muted">想多练，就点上面的数字再来一遍。</p>' +
-      (cur < DAYS.length - 1 ? '<button class="big" type="button" id="nextday">接着学第 ' + (cur + 2) + ' 天</button>' : '') + '</section>';
+    else { var set = logDates(), run = streak(set); body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2>' + (run > 1 ? '<p class="streak">已经连续打卡 ' + run + ' 天！</p>' : '') + '<p class="zh">已经打卡了 ✓ ' + (solo ? '记在你的手机上。' : '孩子能看到你今天学了。') + '</p>' + calHtml(today().slice(0, 7), set, false) + '<p class="muted">想多练，就点上面的数字再来一遍。</p>' +
+      (cur < DAYS.length - 1 ? '<button class="big" type="button" id="nextday">接着学第 ' + (cur + 2) + ' 天</button>' : '') + '</section>'; }
     document.getElementById('main').innerHTML = (pos === 0 ? '<div class="note"><h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2><p>' + esc(d.tip) + '</p></div>' : '<h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2>') +
       '<div><div class="bar"><i style="width:' + Math.round((pos + 1) / steps.length * 100) + '%"></i></div><p class="muted" style="font-size:17px;margin-top:4px">第 ' + (pos + 1) + ' 步，一共 ' + steps.length + ' 步' + (log.some(function (c) { return c.date === today(); }) ? '' : '，最后一步自动打卡') + '</p></div>' + body +
       (s.t === 'end' ? (pos ? '<div class="nav"><button class="big back" type="button" id="prev">上一个</button></div>' : '') : '<div class="nav">' + (pos ? '<button class="big back" type="button" id="prev">上一个</button>' : '<span></span>') + '<button class="big" type="button" id="next">下一个</button></div>');
@@ -226,6 +246,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     var id = ev.target.id;
     if (id === 'next') { go(pos + 1); return; } if (id === 'prev') { go(pos - 1); return; }
     if (id === 'nextday') { openDay(cur + 1); return; }
+    var cm = ev.target.getAttribute('data-cal'); if (cm) { var dt = new Date(+calMonth.slice(0, 4), +calMonth.slice(5, 7) - 1 + Number(cm), 1); calMonth = ymd(dt).slice(0, 7); renderLog(); return; }
     if (id === 'bg-start') { runBg(0); return; } if (id === 'bg-stop') { stopAll(); return; }
     if (id === 'talk-all' && looping) { stopAll(); return; }
     if (id === 'talk-all' || id === 'talk-me') { runTalk(id === 'talk-me'); return; }
