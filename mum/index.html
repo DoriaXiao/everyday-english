@@ -27,10 +27,12 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
 .log ul { margin:8px 0 0; padding-left:20px; color:var(--muted) }
 .log.todo { background:var(--yellow); border-color:#e8d48a } .log.ok { background:var(--soft); border-color:transparent } .log .small { font-size:16px; margin:4px 0 0 }
 .done-big { font-size:60px; text-align:center; line-height:1 }
+.bg { background:var(--card); border:2px solid var(--green); border-radius:16px; padding:14px 16px; display:grid; gap:8px } .bg.on { background:var(--soft) }
 </style></head><body><div class="wrap">
 <header><h1>每天学一点英语</h1><p class="muted">不用写字，听一听，跟着说。说错了没关系。</p></header>
 <section class="inbox" id="inbox" hidden></section>
 <details class="log" id="log"></details>
+<section class="bg" id="bg"></section>
 <div class="days" id="days" role="group" aria-label="选择第几天"></div>
 <main id="main" style="display:grid;gap:16px"></main>
 <p class="muted" style="font-size:15px" id="privacy">你的录音和打卡只发给你家的孩子。网站管理员也能看到这些记录，平时只看统计（比如多少人在学、学到第几天），用来改进课程。</p>
@@ -52,8 +54,8 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   // 听整段 repeats until she taps it again (it reads 停止 while playing); any other sound or step stops it
   var looping = false;
   function endLoop() { looping = false; var b = document.getElementById('talk-all'); if (b) { b.textContent = '听整段'; b.classList.remove('on'); } }
-  function play(src, rate) { endLoop(); seq++; clearLine(); player.onended = null; player.src = src; player.playbackRate = rate || 1; return player.play().catch(soundErr); }
-  function stopAll() { endLoop(); stopRec(); seq++; clearLine(); player.onended = null; player.pause(); }
+  function play(src, rate) { endLoop(); endBg(); seq++; clearLine(); player.onended = null; player.src = src; player.playbackRate = rate || 1; return player.play().catch(soundErr); }
+  function stopAll() { endLoop(); endBg(); stopRec(); seq++; clearLine(); player.onended = null; player.pause(); }
   // dialogue: play the lines in turn; with mine = true her lines are left as a pause for her to say them
   function clearLine() { document.querySelectorAll('.line.now').forEach(function (l) { l.classList.remove('now'); }); }
   function runTalk(mine) { stopAll(); var my = seq, lines = DAYS[cur].talk, els = document.querySelectorAll('.line');
@@ -64,6 +66,26 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
       player.src = l[3]; player.playbackRate = 1; player.onended = function () { player.onended = null; setTimeout(function () { step(j + 1); }, 500); };
       player.play().catch(soundErr); }
     step(0); }
+
+  // 干活时听: the open day's sentences, questions and dialogue, each said twice, over and over until 停止.
+  // The screen is kept on where the browser allows it, because a locked phone stops the sound.
+  var bg = false, bgAt = 0, wake = null;
+  function bgItems(i) { var d = DAYS[i], out = [];
+    d.say.forEach(function (s) { out.push([s[0], s[1], s[3]]); });
+    d.hear.forEach(function (h) { out.push([h.q[0], h.q[1], h.q[2]], [h.a[0], h.a[1], h.a[3]]); });
+    d.talk.forEach(function (l) { out.push([l[1], l[2], l[3]]); }); return out; }
+  function renderBg(it) { var el = document.getElementById('bg'); el.className = 'bg' + (bg ? ' on' : '');
+    el.innerHTML = bg ? '<div class="kind">正在放第 ' + (cur + 1) + ' 天的句子，每句两遍</div>' + (it ? '<div class="en">' + esc(it[0]) + '</div><div class="zh">' + esc(it[1]) + '</div>' : '') +
+        '<div class="btns"><button type="button" class="listen on" id="bg-stop">停止</button></div><p class="hint">手机屏幕别关，放在旁边就行。</p>'
+      : '<div class="btns"><button type="button" class="listen" id="bg-start">🎧 干活时听</button></div><p class="hint">把今天这课的句子一遍遍放，每句说两遍。做饭、收拾的时候听。</p>'; }
+  function endBg() { if (!bg) return; bg = false; if (wake) { wake.release().catch(function () {}); wake = null; } renderBg(); }
+  function runBg(from) { stopAll(); bg = true; var my = seq, list = bgItems(cur);
+    if (navigator.wakeLock && !wake) navigator.wakeLock.request('screen').then(function (w) { if (bg) wake = w; else w.release(); }).catch(function () {});
+    function step(j, rep) { if (my !== seq) return; if (j >= list.length) j = 0; bgAt = j; var it = list[j]; renderBg(it);
+      player.src = it[2]; player.playbackRate = 1;
+      player.onended = function () { player.onended = null; setTimeout(function () { if (rep === 0) step(j, 1); else step(j + 1, 0); }, rep === 0 ? 1500 : 2500); };
+      player.play().catch(soundErr); }
+    step(from || 0, 0); }
 
   // same anonymous sign-in and tables as the main course, marked course = 'mum'
   function api(path, o) { o = o || {}; var h = { apikey: SBK, 'Content-Type': 'application/json' }; if (o.token) h.Authorization = 'Bearer ' + o.token; if (o.prefer) h.Prefer = o.prefer;
@@ -205,6 +227,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     var id = ev.target.id;
     if (id === 'next') { go(pos + 1); return; } if (id === 'prev') { go(pos - 1); return; }
     if (id === 'nextday') { openDay(cur + 1); return; }
+    if (id === 'bg-start') { runBg(0); return; } if (id === 'bg-stop') { stopAll(); return; }
     if (id === 'talk-all' && looping) { stopAll(); return; }
     if (id === 'talk-all' || id === 'talk-me') { runTalk(id === 'talk-me'); return; }
     var opt = ev.target.closest('[data-opt]'); if (opt) { var s = steps[pos]; if (s.picked === undefined) { s.picked = opt.getAttribute('data-opt'); render(); if (s.picked !== s.right) play(s.q[2]); } return; }
@@ -216,7 +239,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     else if (cl.contains('send')) sendRec(ev.target);
   });
   if (solo) document.getElementById('privacy').textContent = '你学到哪、哪天打了卡，都只记在这台手机上，不会发到网上。';
-  openDay(cur, at && at.pos); renderLog(); setupFamily().then(function () { loadMine(); flush(); });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) { loadMine(); flush(); } });
+  openDay(cur, at && at.pos); renderLog(); renderBg(); setupFamily().then(function () { loadMine(); flush(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { loadMine(); flush(); if (bg) runBg(bgAt); } });
 })();
 </script></body></html>
