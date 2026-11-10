@@ -138,7 +138,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     d.say.forEach(function (s) { st.push({ t: 'say', s: s }); });
     d.hear.forEach(function (h) { st.push({ t: 'hear', h: h }); });
     var pool = []; DAYS.slice(0, i + 1).forEach(function (x) { x.say.forEach(function (s) { pool.push(strip(s[1])); }); x.hear.forEach(function (h) { pool.push(strip(h.q[1])); }); });
-    var qs = d.hear.map(function (h) { return h.q; }).concat(shuffle(d.say, r).slice(0, 2));
+    var qs = d.hear.map(function (h) { return h.q; }).concat(shuffle(d.say, r).slice(0, 2).map(function (x) { return [x[0], x[1], x[3]]; }));  // say items are [en, zh, hint, audio]
     shuffle(qs, r).forEach(function (q) { var right = strip(q[1]), others = shuffle(pool.filter(function (p, n) { return p !== right && pool.indexOf(p) === n; }), r).slice(0, 2);
       st.push({ t: 'quiz', q: q, right: right, opts: shuffle([right].concat(others), r) }); });
     st.push({ t: 'talk' }, { t: 'end' }); return st; }
