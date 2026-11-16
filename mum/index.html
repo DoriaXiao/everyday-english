@@ -9,6 +9,7 @@
 h1 { margin:0; font-size:24px } h2 { margin:0; font-size:22px } p { margin:0 } .muted { color:var(--muted) }
 .days { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none } .days button { flex:none; min-width:52px; height:48px; border:1px solid var(--line); background:var(--card); border-radius:12px; font:inherit; color:var(--ink) }
 .days button.on { background:var(--green); color:#fff; border-color:var(--green) } .days button.done::after { content:" ✓" }
+.days button.lock { color:#b9b4a8; background:transparent; border-style:dashed }
 .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; display:grid; gap:10px }
 .en { font-size:28px; font-weight:700; line-height:1.3 } .zh { font-size:21px } .hint { color:var(--muted); font-size:18px }
 .btns { display:flex; flex-wrap:wrap; gap:10px } .btns button, .big { min-height:54px; padding:0 18px; border-radius:14px; border:1px solid var(--green); background:var(--card); color:var(--green); font:inherit; font-weight:700 }
@@ -139,6 +140,8 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
       r.forEach(function (c) { if (!log.some(function (x) { return x.date === c.on_date && x.day === c.day; })) log.push({ date: c.on_date, day: c.day }); if (done.indexOf(c.day - 1) < 0) done.push(c.day - 1); });
       store('log', log); store('done', done); renderLog(); return true; }).catch(function () { return false; }); }
   function firstOpen() { var i = 0; while (i < DAYS.length - 1 && done.indexOf(i) >= 0) i++; return i; }
+  // days after the next lesson stay locked, so a parent cannot skip ahead; days already learned can always be redone
+  function locked(i) { return done.indexOf(i) < 0 && i > firstOpen(); }
 
   // check-ins: kept on the phone and sent to the shared table, so a missed upload is retried later
   function today() { var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
@@ -187,13 +190,13 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   // where she was (day and step) is kept on the phone, so leaving WeChat or a reload does not start the day over
   var done = store('done') || [], at = store('at'), cur = 0, steps = [], pos = 0, items = [];
   while (cur < DAYS.length - 1 && done.indexOf(cur) >= 0) cur++;
-  if (at && DAYS[at.day] && done.indexOf(at.day) < 0) cur = at.day; else at = null;
+  if (at && DAYS[at.day] && done.indexOf(at.day) < 0 && !locked(at.day)) cur = at.day; else at = null;
   function sayBlock(s) { return '<div class="en">' + esc(s[0]) + '</div><div class="zh">' + esc(s[1]) + '</div><div class="hint">大概读音：' + esc(s[2]) + '（以录音为准）</div>' +
     '<div class="btns"><button type="button" class="listen">听</button><button type="button" class="slow">慢一点</button><button type="button" class="rec">跟着说</button></div><div data-replies="' + esc(s[0]).replace(/"/g, '&quot;') + '"></div>'; }
   function card(s, before) { return '<section class="card" data-i="' + (items.push(s) - 1) + '">' + (before || '') + sayBlock(s) + '</section>'; }
   function openDay(i, p) { stopAll(); cur = i; steps = stepsFor(i); pos = Math.min(p || 0, steps.length - 1); render(); }
   function render() {
-    document.getElementById('days').innerHTML = DAYS.map(function (d, i) { return '<button type="button" data-day="' + i + '" class="' + (i === cur ? 'on ' : '') + (done.indexOf(i) >= 0 ? 'done' : '') + '" aria-label="第 ' + (i + 1) + ' 天">' + (i + 1) + '</button>'; }).join('');
+    document.getElementById('days').innerHTML = DAYS.map(function (d, i) { return '<button type="button" data-day="' + i + '" class="' + (i === cur ? 'on ' : '') + (done.indexOf(i) >= 0 ? 'done' : locked(i) ? 'lock' : '') + '" aria-label="第 ' + (i + 1) + ' 天' + (locked(i) ? '，还没解锁' : '') + '">' + (i + 1) + '</button>'; }).join('');
     var d = DAYS[cur], s = steps[pos], body; items = [];
     if (s.t === 'review') body = card(s.s, '<div class="kind">复习：第 ' + (s.from + 1) + ' 天学过的</div>');
     else if (s.t === 'say') body = card(s.s, '<div class="kind">跟着说</div>');
@@ -206,7 +209,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
         return '<div class="line ' + l[0] + '"><div class="who">' + (l[0] === 'me' ? '你' : '对方') + '</div><div class="en">' + esc(l[1]) + '</div><div class="zh">' + esc(l[2]) + '</div></div>'; }).join('') +
       '</section>';
     else { var set = logDates(), run = streak(set); body = '<section class="card" style="text-align:center"><div class="done-big">🎉</div><h2>第 ' + (cur + 1) + ' 天学完了</h2>' + (run > 1 ? '<p class="streak">已经连续打卡 ' + run + ' 天！</p>' : '') + '<p class="zh">已经打卡了 ✓ ' + (solo ? '记在你的手机上。' : '孩子能看到你今天学了。') + '</p>' + calHtml(today().slice(0, 7), set, false) + '<p class="muted">想多练，就点上面的数字再来一遍。</p>' +
-      (cur < DAYS.length - 1 ? '<button class="big" type="button" id="nextday">接着学第 ' + (cur + 2) + ' 天</button>' : '') + '</section>'; }
+      (nextDay() !== cur ? '<button class="big" type="button" id="nextday">接着学第 ' + (nextDay() + 1) + ' 天</button>' : '') + '</section>'; }
     document.getElementById('main').innerHTML = (pos === 0 ? '<div class="note"><h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2><p>' + esc(d.tip) + '</p></div>' : '<h2>第 ' + (cur + 1) + ' 天：' + esc(d.title) + '</h2>') +
       '<div><div class="bar"><i style="width:' + Math.round((pos + 1) / steps.length * 100) + '%"></i></div><p class="muted" style="font-size:17px;margin-top:4px">第 ' + (pos + 1) + ' 步，一共 ' + steps.length + ' 步' + (log.some(function (c) { return c.date === today(); }) ? '' : '，最后一步自动打卡') + '</p></div>' + body +
       (s.t === 'end' ? (pos ? '<div class="nav"><button class="big back" type="button" id="prev">上一个</button></div>' : '') : '<div class="nav">' + (pos ? '<button class="big back" type="button" id="prev">上一个</button>' : '<span></span>') + '<button class="big" type="button" id="next">下一个</button></div>');
@@ -214,6 +217,8 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     showReplies(); window.scrollTo(0, 0); store('at', { day: cur, pos: pos });
   }
   // reaching the last step is the check-in: no button to forget
+  // after a day: the next one if it is open, otherwise the first day not learned yet
+  function nextDay() { return cur < DAYS.length - 1 && !locked(cur + 1) ? cur + 1 : firstOpen(); }
   function finish() { if (done.indexOf(cur) < 0) { done.push(cur); store('done', done); } checkIn(cur + 1); note('打卡了，真棒！'); }
   function go(k) { stopAll(); pos = k; if (steps[pos].t === 'end') finish(); render(); var s = steps[pos];
     if (s.t === 'review' || s.t === 'say') play(s.s[3]); else if (s.t === 'hear') play(s.h.q[2]); else if (s.t === 'quiz' && s.picked === undefined) play(s.q[2]); }
@@ -242,10 +247,10 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     .then(function () { b.textContent = '发过去了 ✓'; note('发过去了，回复会出现在这句下面'); return loadMine(); })
     .catch(function () { b.disabled = false; b.textContent = '发给孩子听听'; note('没发出去，等网好一点再试'); }); }
   document.addEventListener('click', function (ev) {
-    var dayBtn = ev.target.closest('[data-day]'); if (dayBtn) { openDay(Number(dayBtn.getAttribute('data-day'))); return; }
+    var dayBtn = ev.target.closest('[data-day]'); if (dayBtn) { var di = Number(dayBtn.getAttribute('data-day')); if (locked(di)) { note('先学完第 ' + (firstOpen() + 1) + ' 天，这一天才会打开'); return; } openDay(di); return; }
     var id = ev.target.id;
     if (id === 'next') { go(pos + 1); return; } if (id === 'prev') { go(pos - 1); return; }
-    if (id === 'nextday') { openDay(cur + 1); return; }
+    if (id === 'nextday') { openDay(nextDay()); return; }
     var cm = ev.target.getAttribute('data-cal'); if (cm) { var dt = new Date(+calMonth.slice(0, 4), +calMonth.slice(5, 7) - 1 + Number(cm), 1); calMonth = ymd(dt).slice(0, 7); renderLog(); return; }
     if (id === 'bg-start') { runBg(0); return; } if (id === 'bg-stop') { stopAll(); return; }
     if (id === 'talk-all' && looping) { stopAll(); return; }
