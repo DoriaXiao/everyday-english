@@ -190,20 +190,34 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
   function strip(zh) { return zh.replace(/（.*?）/g, '').replace(/[。！]$/, ''); }
   function rand(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
   function shuffle(a, r) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  // review by mistakes: every keyword question and every matching pair she gets wrong comes back at the start of a
+  // later day. Wrong: again tomorrow. Right on a review: the gap grows 3, 7, 14, 30 days. Kept on the phone only.
+  var mem = store('mem') || {}, GAPS = [1, 3, 7, 14, 30];
+  function inDays(n) { var d = new Date(); d.setDate(d.getDate() + n); return ymd(d); }
+  function mark(id, ok) { var m = mem[id] || { box: 0, right: 0, wrong: 0 };
+    if (ok) { m.right++; m.box = Math.min(m.box + 1, GAPS.length - 1); } else { m.wrong++; m.box = 0; }
+    m.due = inDays(ok ? GAPS[m.box] : 1); mem[id] = m; store('mem', mem); }
+  function dueItems(i) { var t = today(); return Object.keys(mem).filter(function (id) { var m = mem[id], day = Number(id.slice(1).split('-')[0]);
+      return m.wrong > 0 && m.due <= t && day !== i && DAYS[day]; }).sort(function (a, b) { return mem[b].wrong - mem[a].wrong || (mem[a].due < mem[b].due ? -1 : 1); }).slice(0, 3); }
   function plain(zh) { return strip(zh).split('，')[0]; }
   function isNum(l) { return l.key.indexOf('数字') >= 0; }
   // steps: two sentences back from earlier days, listening scenes, things to say, two "what is he saying" questions, matching game, dialogue
   function stepsFor(i) { var d = DAYS[i], st = [], r = rand(i + 7);
-    if (!d.review) { var back = [], k = i - 1; while (k >= 0 && back.length < 2) { if (!DAYS[k].review) back.push(k); k--; }
+    var due = dueItems(i), pool = []; DAYS.slice(0, i + 1).forEach(function (x) { x.listen.forEach(function (l) { if (!isNum(l)) { var z = plain(l.zh); if (pool.indexOf(z) < 0) pool.push(z); } }); });
+    due.forEach(function (id) { var kind = id[0], dd = Number(id.slice(1).split('-')[0]), n = Number(id.split('-')[1]);
+      if (kind === 'L') { var l = DAYS[dd].listen[n], line = l.lines[Math.floor(r() * l.lines.length)], right = isNum(l) ? l.zh : plain(l.zh);
+        st.push({ t: 'quiz', kw: true, rv: true, id: id, q: [line[0], l.zh, line[1]], right: right, opts: shuffle([right].concat(shuffle(pool.filter(function (p) { return p !== right; }), r).slice(0, 2)), r) }); }
+      else { var pr = DAYS[dd].match[n], oth = DAYS[dd].match.filter(function (m, j) { return j !== n; }).map(function (m) { return m[1]; });
+        st.push({ t: 'quiz', rv: true, id: id, q: [pr[0], pr[1], pr[2]], right: pr[1], opts: shuffle([pr[1]].concat(shuffle(oth, r).slice(0, 2)), r) }); } });
+    if (!due.length && !d.review) { var back = [], k = i - 1; while (k >= 0 && back.length < 2) { if (!DAYS[k].review) back.push(k); k--; }
       back.forEach(function (b) { var s = DAYS[b].say, c = DAYS[b].cue || []; st.push({ t: 'review', s: s[s.length - 1], cue: c[s.length - 1], from: b }); }); }
     if (d.words && d.words.length) st.push({ t: 'words' });
     d.listen.forEach(function (l, n) { st.push({ t: 'listen', l: l, first: n === 0 }); });
     d.say.forEach(function (s, n) { st.push({ t: 'say', s: s, cue: d.cue && d.cue[n] }); });
-    var pool = []; DAYS.slice(0, i + 1).forEach(function (x) { x.listen.forEach(function (l) { if (!isNum(l)) { var z = plain(l.zh); if (pool.indexOf(z) < 0) pool.push(z); } }); });
     shuffle(d.listen.filter(function (l) { return !isNum(l); }), r).slice(0, 2).forEach(function (l) {
       var line = l.lines[l.lines.length > 1 ? 1 + Math.floor(r() * (l.lines.length - 1)) : 0], right = plain(l.zh), others = shuffle(pool.filter(function (p) { return p !== right; }), r).slice(0, 2);
-      st.push({ t: 'quiz', kw: true, q: [line[0], l.zh, line[1]], right: right, opts: shuffle([right].concat(others), r) }); });
-    if (d.match && d.match.length) { var idx = d.match.map(function (m, n) { return n; }); st.push({ t: 'match', pairs: d.match, left: shuffle(idx, r), right: shuffle(idx, r), ok: {}, sel: null }); }
+      st.push({ t: 'quiz', kw: true, id: 'L' + i + '-' + d.listen.indexOf(l), q: [line[0], l.zh, line[1]], right: right, opts: shuffle([right].concat(others), r) }); });
+    if (d.match && d.match.length) { var idx = d.match.map(function (m, n) { return n; }); st.push({ t: 'match', pairs: d.match, left: shuffle(idx, r), right: shuffle(idx, r), ok: {}, miss: {}, sel: null }); }
     st.push({ t: 'talk' }, { t: 'end' }); return st; }
 
   // where she was (day and step) is kept on the phone, so leaving WeChat or a reload does not start the day over
@@ -233,7 +247,7 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
         s.left.map(function (k, n) { return '<button type="button" class="m-a' + (s.ok[k] ? ' ok' : '') + (s.sel === k ? ' sel' : '') + '" data-ma="' + k + '">' + (s.ok[k] ? esc(s.pairs[k][0]) + ' = ' + esc(s.pairs[k][1]) : '🔊 第 ' + (n + 1) + ' 个') + '</button>'; }).join('') + '</div><div class="col">' +
         s.right.map(function (k) { return '<button type="button" class="m-b' + (s.ok[k] ? ' ok' : '') + '" data-mb="' + k + '"' + (s.ok[k] ? ' disabled' : '') + '>' + esc(s.pairs[k][1]) + '</button>'; }).join('') + '</div></div>' +
         (all ? '<p class="zh" style="text-align:center">全配对了，真棒！🎉</p>' : '') + '</section>'; }
-    else if (s.t === 'quiz') body = '<section class="card"><div class="kind">' + (s.kw ? '听一听，他在说什么？' : '听一听，是什么意思？') + '</div><div class="btns"><button type="button" class="listen" data-src="' + s.q[2] + '">再听一遍</button><button type="button" data-src="' + s.q[2] + '" data-rate="0.7">慢一点</button></div>' +
+    else if (s.t === 'quiz') body = '<section class="card"><div class="kind">' + (s.rv ? '复习：上次没听出来的，再听一次' : s.kw ? '听一听，他在说什么？' : '听一听，是什么意思？') + '</div><div class="btns"><button type="button" class="listen" data-src="' + s.q[2] + '">再听一遍</button><button type="button" data-src="' + s.q[2] + '" data-rate="0.7">慢一点</button></div>' +
       '<div class="opts">' + s.opts.map(function (o) { var cls = s.picked === undefined ? '' : o === s.right ? 'right' : o === s.picked ? 'wrong' : ''; return '<button type="button" data-opt="' + esc(o) + '" class="' + cls + '">' + esc(o) + '</button>'; }).join('') + '</div>' +
       (s.picked !== undefined ? '<p class="zh">' + (s.picked === s.right ? '对了！' : '没关系，正确的是绿色那个。') + '英文是：<b>' + esc(s.q[0]) + '</b></p>' : '') + '</section>';
     else if (s.t === 'talk') body = '<section class="card"><div class="kind">小对话</div>' + '<div class="btns"><button type="button" class="listen" id="talk-all">听整段</button><button type="button" id="talk-me">我来演「你」</button></div><p class="hint">先听几遍整段（会一直重复，听够了点「停止」），再点「我来演」：对方说完，轮到你时停下来，你自己说。</p>' + d.talk.map(function (l) {
@@ -291,9 +305,9 @@ button:focus-visible, summary:focus-visible { outline:3px solid #d9a400; outline
     var ma = ev.target.closest('[data-ma]'); if (ma) { var sm = steps[pos], k = Number(ma.getAttribute('data-ma')); play(sm.pairs[k][2]); if (!sm.ok[k]) { sm.sel = k; render(true); } return; }
     var mb = ev.target.closest('[data-mb]'); if (mb) { var sb = steps[pos], kb = Number(mb.getAttribute('data-mb'));
       if (sb.sel === null) { note('先点左边的喇叭听一听'); return; }
-      if (kb === sb.sel) { sb.ok[kb] = true; sb.sel = null; note(sb.pairs.every(function (p, n) { return sb.ok[n]; }) ? '全配对了，真棒！' : '对了！'); } else { note('不对，再听一遍'); play(sb.pairs[sb.sel][2]); }
+      if (kb === sb.sel) { sb.ok[kb] = true; sb.sel = null; mark('M' + cur + '-' + kb, !sb.miss[kb]); note(sb.pairs.every(function (p, n) { return sb.ok[n]; }) ? '全配对了，真棒！' : '对了！'); } else { sb.miss[sb.sel] = true; note('不对，再听一遍'); play(sb.pairs[sb.sel][2]); }
       render(true); return; }
-    var opt = ev.target.closest('[data-opt]'); if (opt) { var s = steps[pos]; if (s.picked === undefined) { s.picked = opt.getAttribute('data-opt'); render(true); if (s.picked !== s.right) play(s.q[2]); } return; }
+    var opt = ev.target.closest('[data-opt]'); if (opt) { var s = steps[pos]; if (s.picked === undefined) { s.picked = opt.getAttribute('data-opt'); if (s.id) mark(s.id, s.picked === s.right); render(true); if (s.picked !== s.right) play(s.q[2]); } return; }
     var ra = ev.target.getAttribute('data-ra'); if (ra) { playStored(ra); return; }
     var se = ev.target.closest('[data-src]'); if (se) { play(se.getAttribute('data-src'), Number(se.getAttribute('data-rate')) || 1); return; }
     var c = ev.target.closest('[data-i]'); if (!c) return; var it = items[Number(c.getAttribute('data-i'))], cl = ev.target.classList;
