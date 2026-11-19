@@ -143,6 +143,11 @@ nav a.done span::after { content: " ✓"; color: var(--gum) }
 .inbox .item .mine-text { font-size: 14px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere }
 .inbox .item .reply-text { background: var(--paper); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere }
 .inbox .item .reply-text b { display: block; font-size: 12px; color: var(--gum) }
+.mylist { background: var(--paper); border-color: var(--line) } .mylist .item a { font-size: 14px; color: var(--gum) }
+.mybtn { margin-top: 8px; border: 1px solid var(--gum); border-radius: 999px; padding: 6px 14px; background: #fff; color: var(--gum); font: inherit; font-size: 14px; cursor: pointer }
+.lastfix .lf { display: grid; gap: 10px } .lastfix .was { font-size: 15px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere }
+.lastfix .better { font-family: var(--f-display); font-size: 19px; background: #e3f0ea; border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere }
+.lastfix details { font-size: 14px } .lastfix details div { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--paper); border-radius: 10px; padding: 8px 12px; margin-top: 6px }
 .inbox .gotit { justify-self: start; border: 0; border-radius: 999px; padding: 10px 18px; background: var(--wattle); color: #1d2a26; font: inherit; font-weight: 700; cursor: pointer }
 .answer.fresh { border: 2px solid var(--wattle) }
 .recap { margin: 0; padding-left: 20px; display: grid; gap: 6px }
@@ -167,8 +172,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     <h1>每日一句 <span>Everyday English</span></h1>
     <p>每个生活场景学三天，跟着步骤走，大约十分钟。</p>
     <span class="progress" id="progress"></span>
+    <div><button class="mybtn" id="mybtn" type="button" hidden>我的批改</button></div>
   </header>
   <section class="inbox" id="inbox" hidden aria-live="polite"></section>
+  <section class="inbox mylist" id="mylist" hidden></section>
   <nav aria-label="最近几天"><a href="#day-41" data-date="2026-11-26">Day 41<span>复习日 · 第六周</span></a><a href="#day-40" data-date="2026-11-25">Day 40<span>巩固周 · 看房、搬家、认识邻居</span></a><a href="#day-39" data-date="2026-11-24">Day 39<span>巩固周 · 打电话订位，再去吃饭</span></a><a href="#day-38" data-date="2026-11-23">Day 38<span>巩固周 · 邻居</span></a><a href="#day-37" data-date="2026-11-22">Day 37<span>巩固周 · 租房看房</span></a><a href="#day-36" data-date="2026-11-21">Day 36<span>巩固周 · 餐馆吃饭</span></a><a href="#day-35" data-date="2026-11-20">Day 35<span>巩固周 · 打电话预约</span></a><a href="#day-34" data-date="2026-11-19">Day 34<span>复习日 · 第五周</span></a><a href="#day-33" data-date="2026-11-18">Day 33<span>邻居和社区 · 总结和断句专练</span></a><a href="#day-32" data-date="2026-11-17">Day 32<span>邻居和社区 · 邻里之间的小事</span></a><a href="#day-31" data-date="2026-11-16">Day 31<span>邻居和社区 · 认识新邻居</span></a><a href="#day-30" data-date="2026-11-15">Day 30<span>租房看房 · 从头到尾说一遍</span></a><a href="#day-29" data-date="2026-11-14">Day 29<span>租房看房 · 申请和签约</span></a><a href="#day-28" data-date="2026-11-13">Day 28<span>租房看房 · 看房时问什么</span></a><a href="#day-27" data-date="2026-11-12">Day 27<span>复习日 · 第四周</span></a><a href="#day-26" data-date="2026-11-11">Day 26<span>餐馆吃饭 · 从头到尾说一遍</span></a><a href="#day-25" data-date="2026-11-10">Day 25<span>餐馆吃饭 · 点菜和结账</span></a><a href="#day-24" data-date="2026-11-09">Day 24<span>餐馆吃饭 · 进门和点水</span></a><a href="#day-23" data-date="2026-11-08">Day 23<span>打电话预约 · 打客服电话</span></a><a href="#day-22" data-date="2026-11-07">Day 22<span>打电话预约 · 改时间、取消</span></a><a href="#day-21" data-date="2026-11-06">Day 21<span>打电话预约 · 约理发</span></a><a href="#day-20" data-date="2026-11-05">Day 20<span>复习日 · 第三周</span></a><a href="#day-19" data-date="2026-11-04">Day 19<span>同事闲聊 · 说说打算</span></a><a href="#day-18" data-date="2026-11-03">Day 18<span>同事闲聊 · 聊日常习惯</span></a><a href="#day-17" data-date="2026-11-02">Day 17<span>同事闲聊 · 周一问周末</span></a><a href="#day-16" data-date="2026-11-01">Day 16<span>看医生 · 去药店拿药</span></a><a href="#day-15" data-date="2026-10-31">Day 15<span>看医生 · 说症状</span></a><a href="#day-14" data-date="2026-10-30">Day 14<span>看医生 · 打电话预约</span></a><a href="#day-13" data-date="2026-10-29">Day 13<span>复习日 · 第二周</span></a><a href="#day-12" data-date="2026-10-28">Day 12<span>咖啡馆 · 结账</span></a><a href="#day-11" data-date="2026-10-27">Day 11<span>咖啡馆 · 点吃的</span></a><a href="#day-10" data-date="2026-10-26">Day 10<span>咖啡馆 · 点咖啡</span></a><a href="#day-9" data-date="2026-10-25">Day 9<span>和朋友叙旧 · 约下次</span></a><a href="#day-8" data-date="2026-10-24">Day 8<span>和朋友叙旧 · 讲讲周末</span></a><a href="#day-7" data-date="2026-10-23">Day 7<span>和朋友叙旧 · 好久不见</span></a><a href="#day-6" data-date="2026-10-22">Day 6<span>第一次见面 · 留联系方式</span></a><a href="#day-5" data-date="2026-10-21">Day 5<span>第一次见面 · 聊几句</span></a><a href="#day-4" data-date="2026-10-20">Day 4<span>第一次见面 · 打招呼</span></a><a href="#day-3" data-date="2026-10-19">Day 3<span>超市 · 熟食柜和退货</span></a><a href="#day-2" data-date="2026-10-18">Day 2<span>超市 · 结账</span></a><a href="#day-1" data-date="2026-10-17">Day 1<span>超市 · 找东西</span></a><a class="more" href="#course">全部课程 ↓</a></nav>
   
 <details class="lesson reviewday" id="day-41" data-date="2026-11-26" data-unit="复习日" >
@@ -180,6 +187,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step" data-title="这周学了什么"><h3>这周学了什么 <span class="mono">This week</span></h3>
       <ul class="recap"><li><b>Day 35</b> 巩固周 · 打电话预约：Could I move my appointment to Friday?</li><li><b>Day 36</b> 巩固周 · 餐馆吃饭：Sorry, I didn&#x27;t order this.</li><li><b>Day 37</b> 巩固周 · 租房看房：Are bills included?</li><li><b>Day 38</b> 巩固周 · 邻居：Let me know if you need anything.</li><li><b>Day 39</b> 巩固周 · 打电话订位，再去吃饭：Do you have anything on Saturday night?</li><li><b>Day 40</b> 巩固周 · 看房、搬家、认识邻居：When can I move in?</li></ul><p class="hint">今天没有新内容，把这些过一遍就好。觉得哪课不熟，可以点上面的课程回去再看。</p></section>
     <section class="block step" data-title="听一听"><h3>听一听 <span class="mono">Listening</span></h3>
@@ -212,6 +220,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -250,6 +259,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -288,6 +298,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -326,6 +337,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -364,6 +376,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -402,6 +415,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -439,6 +453,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step" data-title="这周学了什么"><h3>这周学了什么 <span class="mono">This week</span></h3>
       <ul class="recap"><li><b>Day 28</b> 租房看房 · 看房时问什么：How much is the bond?</li><li><b>Day 29</b> 租房看房 · 申请和签约：When can I move in?</li><li><b>Day 30</b> 租房看房 · 从头到尾说一遍：From inspection to move-in</li><li><b>Day 31</b> 邻居和社区 · 认识新邻居：Hi, I&#x27;ve just moved in next door.</li><li><b>Day 32</b> 邻居和社区 · 邻里之间的小事：Could you keep an eye on my place?</li><li><b>Day 33</b> 邻居和社区 · 总结和断句专练：One idea, one sentence.</li></ul><p class="hint">今天没有新内容，把这些过一遍就好。觉得哪课不熟，可以点上面的课程回去再看。</p></section>
     <section class="block step" data-title="听一听"><h3>听一听 <span class="mono">Listening</span></h3>
@@ -471,6 +486,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -509,6 +525,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -547,6 +564,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -585,6 +603,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -623,6 +642,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -661,6 +681,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -698,6 +719,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step" data-title="这周学了什么"><h3>这周学了什么 <span class="mono">This week</span></h3>
       <ul class="recap"><li><b>Day 21</b> 打电话预约 · 约理发：Hi, I&#x27;d like to book a haircut, please.</li><li><b>Day 22</b> 打电话预约 · 改时间、取消：Could I move my appointment to Friday?</li><li><b>Day 23</b> 打电话预约 · 打客服电话：Could you spell that for me?</li><li><b>Day 24</b> 餐馆吃饭 · 进门和点水：Hi, do you have a table for two?</li><li><b>Day 25</b> 餐馆吃饭 · 点菜和结账：Could we get the bill, please?</li><li><b>Day 26</b> 餐馆吃饭 · 从头到尾说一遍：From the door to the bill</li></ul><p class="hint">今天没有新内容，把这些过一遍就好。觉得哪课不熟，可以点上面的课程回去再看。</p></section>
     <section class="block step" data-title="听一听"><h3>听一听 <span class="mono">Listening</span></h3>
@@ -730,6 +752,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -768,6 +791,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -806,6 +830,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -844,6 +869,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -882,6 +908,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -920,6 +947,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -957,6 +985,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step" data-title="这周学了什么"><h3>这周学了什么 <span class="mono">This week</span></h3>
       <ul class="recap"><li><b>Day 14</b> 看医生 · 打电话预约：I&#x27;d like to make an appointment, please.</li><li><b>Day 15</b> 看医生 · 说症状：I&#x27;ve had a sore throat for three days.</li><li><b>Day 16</b> 看医生 · 去药店拿药：I&#x27;d like to fill this prescription, please.</li><li><b>Day 17</b> 同事闲聊 · 周一问周末：How was your weekend?</li><li><b>Day 18</b> 同事闲聊 · 聊日常习惯：I usually take the bus to work.</li><li><b>Day 19</b> 同事闲聊 · 说说打算：What are you up to this weekend?</li></ul><p class="hint">今天没有新内容，把这些过一遍就好。觉得哪课不熟，可以点上面的课程回去再看。</p></section>
     <section class="block step" data-title="听一听"><h3>听一听 <span class="mono">Listening</span></h3>
@@ -989,6 +1018,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1027,6 +1057,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1065,6 +1096,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1103,6 +1135,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1141,6 +1174,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1179,6 +1213,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1216,6 +1251,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step" data-title="这周学了什么"><h3>这周学了什么 <span class="mono">This week</span></h3>
       <ul class="recap"><li><b>Day 7</b> 和朋友叙旧 · 好久不见：Long time no see! How have you been?</li><li><b>Day 8</b> 和朋友叙旧 · 讲讲周末：What did you get up to on the weekend?</li><li><b>Day 9</b> 和朋友叙旧 · 约下次：Are you free this Saturday?</li><li><b>Day 10</b> 咖啡馆 · 点咖啡：Can I get a large flat white, please?</li><li><b>Day 11</b> 咖啡馆 · 点吃的：Does this have any nuts in it?</li><li><b>Day 12</b> 咖啡馆 · 结账：Can we split the bill?</li></ul><p class="hint">今天没有新内容，把这些过一遍就好。觉得哪课不熟，可以点上面的课程回去再看。</p></section>
     <section class="block step" data-title="听一听"><h3>听一听 <span class="mono">Listening</span></h3>
@@ -1248,6 +1284,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1286,6 +1323,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1324,6 +1362,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1362,6 +1401,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1400,6 +1440,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1438,6 +1479,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1476,6 +1518,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1514,6 +1557,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1552,6 +1596,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1590,6 +1635,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1628,6 +1674,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1666,6 +1713,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
   <div class="body">
     <div class="stepbar" hidden><div class="track"><i></i></div>
       <div class="row"><span class="steplabel"></span><button class="ghost showall" type="button">展开全部</button></div></div>
+    <section class="block step lastfix" data-title="上次的批改" hidden><h3>上次的批改 <span class="mono">Last correction</span></h3><div class="lf"></div></section>
     <section class="block step review" data-title="复习" hidden><h3>复习 <span class="mono">Review</span></h3>
       <p class="hint">以前学过的句子，隔几天就轮回来一次。看中文，先大声说英文，再点开对答案。</p><ol class="drill"></ol></section>
     <section class="block step" data-title="听今天的句子"><h3>今天的句子 <span class="mono">Key phrases</span></h3>
@@ -1856,7 +1904,44 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
       document.querySelectorAll('.answer.fresh').forEach(function (a) { a.classList.remove('fresh'); });
     };
   }
+  // 我的批改: every corrected piece of writing, newest first, so she can find old corrections again
+  function renderMyList(rows) {
+    var got = rows.filter(function (r) { return r.reply; }).slice().reverse(), btn = document.getElementById('mybtn'), box = document.getElementById('mylist');
+    btn.hidden = !got.length; if (!got.length) return;
+    btn.textContent = (box.hidden ? '我的批改（' + got.length + '）' : '收起我的批改');
+    box.innerHTML = '<h2>我的批改（' + got.length + ' 条，最新的在上面）</h2>' + got.map(function (r) {
+      return '<div class="item"><span class="when">第 ' + r.day + ' 课 · ' + fmt(r.created_at) + ' · ' + (r.kind === 'speak' ? '你读的' : '你写的') + '</span><div class="mine-text">' + esc(r.text) + '</div><div class="reply-text"><b>回复</b>' + esc(r.reply) + '</div>' +
+        '<a href="#day-' + r.day + '" data-open="' + r.day + '">去第 ' + r.day + ' 课 →</a></div>'; }).join('');
+    btn.onclick = function () { box.hidden = !box.hidden; btn.textContent = box.hidden ? '我的批改（' + got.length + '）' : '收起我的批改'; };
+    box.onclick = function (ev) { var a = ev.target.closest('[data-open]'); if (a) { var d = document.getElementById('day-' + a.getAttribute('data-open')); if (d) d.open = true; } };
+  }
+  // 上次的批改: each lesson starts with her most recent corrected writing from an earlier day, the improved version
+  // to read aloud, and a choice between her sentence and the improved one
+  function improved(reply) { var ms = ['改好的版本：', '改好的版本:', '按题目写，可以这样：', '可以这样写：'];
+    for (var i = 0; i < ms.length; i++) { var k = reply.lastIndexOf(ms[i]); if (k >= 0) return reply.slice(k + ms[i].length).trim().split(/\n\s*\n/)[0].trim(); } return ''; }
+  function renderLastFix(rows) {
+    var w = (rows || []).filter(function (r) { return r.reply && r.kind !== 'speak'; });
+    document.querySelectorAll('.lastfix').forEach(function (sec) {
+      var day = Number(sec.closest('.lesson').id.slice(4)), prev = w.filter(function (r) { return r.day < day; });
+      if (!prev.length) return;
+      var r = prev.reduce(function (a, b) { return b.day > a.day || (b.day === a.day && b.created_at > a.created_at) ? b : a; }), imp = improved(r.reply);
+      var body;
+      if (imp && imp !== r.text.trim()) {
+        var o = ['<button class="pick" type="button" data-right="0">' + esc(r.text) + '</button>', '<button class="pick" type="button" data-right="1">' + esc(imp) + '</button>'];
+        if (r.day % 2) o.reverse();
+        body = '<p class="hint">这是第 ' + r.day + ' 课你写的和批改后的版本。先选出对的那一段，选完会显示改好的版本。</p>' +
+          '<ol class="drill"><li class="pickq"><div class="zh-q">两段里哪一段是对的？</div><div class="opts2">' + o.join('') + '</div>' +
+          '<div class="why" hidden><b>改好的版本：</b><div class="better">' + esc(imp) + '</div><p class="hint">把它大声读一遍，读到句号就停一下。为什么这样改，点下面「看完整批改」。</p></div></li></ol>';
+      } else {
+        body = '<p class="hint">这是第 ' + r.day + ' 课你写的，再看一遍批改。</p><div><b>你写的：</b><div class="was">' + esc(r.text) + '</div></div>';
+      }
+      sec.querySelector('.lf').innerHTML = body + '<details' + (imp ? '' : ' open') + '><summary>看完整批改</summary><div>' + esc(r.reply) + '</div></details>';
+      sec.hidden = false;
+    });
+  }
   function renderMine(rows) {
+    store('mine-cache', rows);
+    renderMyList(rows); renderLastFix(rows);
     renderInbox(rows);
     var seenIds = store('seen-replies') || [];
     document.querySelectorAll('.mine').forEach(function (box) {
@@ -1996,6 +2081,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-vis
     show(false);
     mode(!store('showall'));
   }
+  renderLastFix(store('mine-cache') || []); renderMyList(store('mine-cache') || []);  // before the steps are counted; fresh data fills them again after loading
   unlocked.forEach(stepper);
 })();
 </script>
