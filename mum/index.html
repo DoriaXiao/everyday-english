@@ -61,7 +61,9 @@ select { font:inherit; font-size:20px; width:100%; min-height:56px; padding:0 14
 .send { align-self:center; border:2px solid var(--green); border-radius:999px; background:var(--soft); color:var(--green); font-weight:700; min-height:48px; padding:0 20px }
 /* list and settings */
 .rows { display:grid; gap:10px; padding:8px 0 24px } .row { display:flex; align-items:center; gap:14px; min-height:60px; padding:0 14px; background:#fff; border:1px solid var(--line); border-radius:14px; width:100%; text-align:left }
-.row.now { border:2px solid var(--green); background:var(--soft) } .row.lock { background:transparent; border-style:dashed; color:#b9b4a8 }
+.card { background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden } .card .row { border:0; background:transparent } .card.now { border:2px solid var(--green); background:var(--soft) } .card.lock { background:transparent; border-style:dashed; color:#b9b4a8 } .card.now .st { color:var(--green); font-weight:700 }
+.acts { padding:0 14px 12px } .acts .secondary { min-height:48px } .review { margin-top:12px }
+.sheet .sec-t { font-size:18px; font-weight:800; color:var(--green); margin-top:10px } .sheet .word { margin-top:8px } .s-en { font-size:22px; font-weight:700; line-height:1.3 }
 .row .num { width:36px; font-size:22px; font-weight:800; text-align:center } .row .t { flex-grow:1; font-size:20px } .row .st { font-size:16px; color:var(--muted) } .row.now .st { color:var(--green); font-weight:700 }
 .set { display:grid; gap:14px; padding:12px 0 24px } .h1 { font-size:28px; font-weight:800 }
 /* what is playing right now lights up, so she can see the tap worked */
@@ -156,7 +158,7 @@ select { font:inherit; font-size:20px; width:100%; min-height:56px; padding:0 14
   function playSeq(list, keys) { endLoop(); endBg(); seq++; clearLine(); keys = keys || []; var my = seq, j = 0;
     (function next() { if (my !== seq || j >= list.length) return; var k = keys[j]; sound(list[j++], 1, k, function () { setTimeout(next, 900); }); })(); }
   function stopAll() { endLoop(); endBg(); stopRec(); seq++; clearLine(); player.onended = null; player.pause(); lit(''); }
-  function endLoop() { looping = false; var b = document.getElementById('talk-all'); if (b) { b.textContent = '听整段'; b.classList.remove('on'); } }
+  function endLoop() { looping = false; var b = document.getElementById('talk-all'); if (b) { b.textContent = '听整段'; b.classList.remove('on'); } var a = document.getElementById('sheet-all'); if (a) { a.textContent = '全部放一遍'; a.classList.remove('on'); } }
   function clearLine() { document.querySelectorAll('.line.now').forEach(function (l) { l.classList.remove('now'); }); }
 
   // ---- review by mistakes: a wrong keyword question or matching pair comes back at the start of a later day.
@@ -193,12 +195,13 @@ select { font:inherit; font-size:20px; width:100%; min-height:56px; padding:0 14
   function hl(t, key) { var h = esc(t); key.split('/').forEach(function (w) { w = w.trim(); if (!w || w === '数字') return; h = h.replace(new RegExp('\\b(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')\\b', 'gi'), '<span class="kw">$1</span>'); }); return h; }
   function pill(k, light) { return '<span class="pill"><span class="off-play">🔊 听</span><span class="on-play">正在放</span></span>'; }
 
-  // ---- views: home, lesson (#day-N), list (#list), settings (#settings), 干活时听 (#bg-N) ----
+  // ---- views: home, lesson (#day-N), list (#list), settings (#settings), 干活时听 (#bg-N), 只听句子 (#sheet-N) ----
   var view = '', cur = 0, steps = [], pos = 0, showHint = false, bg = false, wake = null;
   function go(hash) { if (location.hash === hash) route(); else location.hash = hash; }
   function route() { stopAll(); var h = location.hash || '#home', m;
     if ((m = h.match(/^#day-(\d+)$/))) { var i = Number(m[1]); if (i >= N || locked(i)) { go('#home'); return; } openDay(i); return; }
     if ((m = h.match(/^#bg-(\d+)$/))) { cur = Math.min(Number(m[1]), N - 1); view = 'bg'; runBg(); return; }
+    if ((m = h.match(/^#sheet-(\d+)$/))) { var si = Number(m[1]); if (si >= N || locked(si)) { go('#home'); return; } cur = si; view = 'sheet'; renderSheet(); return; }
     if (h === '#list') { view = 'list'; renderList(); return; }
     if (h === '#settings') { view = 'settings'; renderSettings(); return; }
     view = 'home'; renderHome(); }
@@ -223,13 +226,29 @@ select { font:inherit; font-size:20px; width:100%; min-height:56px; padding:0 14
       (known ? '<p style="font-size:22px">你已经会说 <b class="green">' + known + '</b> 句英语了</p>' : '') +
       (run > 1 ? '<p class="green b big">已经连续学了 ' + run + ' 天</p>' : total ? '<p class="muted big">一共学了 ' + total + ' 天</p>' : '') +
       '</div>' + (allDone ? '' : '<button class="primary" type="button" data-go="#day-' + day + '">' + (checked ? '接着学第 ' + (day + 1) + ' 天' : '开始今天的课') + '</button>') +
+      (done.length ? '<button class="secondary review" type="button" data-go="#list">复习学过的课</button>' : '') +
       '<div class="links"><button class="link" type="button" data-go="#list">全部课程</button><button class="link" type="button" data-go="#bg-' + day + '">干活时听</button><button class="link" type="button" data-go="#settings">设置</button></div></section>';
     var sb = document.getElementById('seen'); if (sb) sb.onclick = function () { store('seen', seen.concat(fresh.map(function (r) { return r.id; }))); renderHome(); };
   }
+  // 全部课程 (复习学过的课): a learned day has two buttons, 听句子 (#sheet-N) and 再学 (#day-N)
   function renderList() { var f = firstOpen();
-    app.innerHTML = '<section class="view"><div class="top"><button class="link" type="button" data-go="#home">‹ 首页</button><b class="big">全部课程</b></div><div class="rows">' +
+    app.innerHTML = '<section class="view"><div class="top"><button class="link" type="button" data-go="#home">‹ 首页</button><b class="big">全部课程</b></div><p class="muted">学过的课，点「听句子」快速过一遍，点「再学」从头学一遍</p><div class="rows">' +
       DAYS.map(function (d, i) { var dn = done.indexOf(i) >= 0, now = i === f && !dn, lk = locked(i);
-        return '<button type="button" class="row' + (now ? ' now' : '') + (lk ? ' lock' : '') + '" data-open="' + i + '"><span class="num">' + (i + 1) + '</span><span class="t">' + esc(d.title) + '</span><span class="st">' + (dn ? '学过 ✓' : now ? '接着学' : '还没开') + '</span></button>'; }).join('') + '</div></section>'; }
+        return '<div class="card' + (now ? ' now' : '') + (lk ? ' lock' : '') + '"><button type="button" class="row" data-open="' + i + '"><span class="num">' + (i + 1) + '</span><span class="t">' + esc(d.title) + '</span><span class="st">' + (dn ? '学过 ✓' : now ? '接着学 ›' : '还没开') + '</span></button>' +
+          (dn ? '<div class="acts two"><button class="secondary" type="button" data-go="#sheet-' + i + '">🔊 听句子</button><button class="secondary" type="button" data-open="' + i + '">再学</button></div>' : '') + '</div>'; }).join('') + '</div></section>'; }
+  // 只听句子: words, the lines she learned to understand, the things to say; tap one to hear it, or play them all
+  var sheetList = [];
+  function renderSheet() { var d = DAYS[cur], secs = [], seen = {}; sheetList = [];
+    function add(name, rows) { rows = rows.filter(function (r) { if (!r[2] || seen[r[0]]) return false; seen[r[0]] = 1; return true; }); if (rows.length) secs.push([name, rows]); }
+    add('生词', (d.words || []).map(function (w) { return [w[0], w[1], w[4]]; }));
+    var heard = []; d.listen.forEach(function (l) { l.lines.forEach(function (x, j) { heard.push([x[0], j ? '意思同上，换个说法' : l.zh.replace(/（.*?）/g, '').replace(/[。！]$/, ''), x[1]]); }); }); add('听懂', heard);
+    add('要会说的', d.say.map(function (x) { return [x[0], x[1], x[3]]; }));
+    app.innerHTML = '<section class="view sheet"><div class="top"><button class="link" type="button" data-go="#list">‹ 返回</button><span class="muted">第 ' + (cur + 1) + ' 天</span></div><div class="day-t" style="text-align:left">' + esc(d.title) + '</div><p class="muted">点一句就放一句</p>' +
+      secs.map(function (sec) { return '<div class="sec-t">' + sec[0] + '</div>' + sec[1].map(function (r) { var n = sheetList.length; sheetList.push([r[2], 'r' + n]);
+        return '<button type="button" class="word" data-sheet="' + n + '" data-k="r' + n + '"><span class="wt"><span class="s-en">' + esc(r[0]) + '</span><br><span class="w-zh">' + esc(r[1]) + '</span></span>' + pill() + '</button>'; }).join(''); }).join('') +
+      '<div class="bar two"><button class="secondary" type="button" id="sheet-all">全部放一遍</button><button class="secondary" type="button" data-go="#day-' + cur + '">从头再学</button></div></section>'; }
+  function runSheet() { stopAll(); var my = seq, a = document.getElementById('sheet-all'); looping = true; a.textContent = '停止'; a.classList.add('on');
+    (function next(j) { if (my !== seq) return; if (j >= sheetList.length) { endLoop(); return; } sound(sheetList[j][0], 1, sheetList[j][1], function () { setTimeout(function () { next(j + 1); }, 900); }); })(0); }
   function renderSettings() { var p = prefs();
     app.innerHTML = '<section class="view"><div class="top"><button class="link" type="button" data-go="#home">‹ 首页</button><b class="big">设置</b></div><div class="set">' +
       (solo ? '<p class="muted">课里「我来看家人」「住一个月」这几句，会按这里选的换：</p>' +
@@ -350,6 +369,7 @@ select { font:inherit; font-size:20px; width:100%; min-height:56px; padding:0 14
     if ((el = t.closest('[data-ra]'))) { playStored(el.getAttribute('data-ra')); return; }
     var id = (t.closest('[id]') || {}).id, s = steps[pos];
     if (id === 'setup-go') { var n = Number(document.getElementById('s-start').value); store('prefs', { who: document.getElementById('s-who').value, stay: document.getElementById('s-stay').value }); DAYS = resolve(RAW, prefs()); if (n > 0) startFrom(n); store('setup', 1); renderHome(); return; }
+    if (view === 'sheet') { if (id === 'sheet-all') { if (looping) stopAll(); else runSheet(); return; } if ((el = t.closest('[data-sheet]'))) { var it = sheetList[Number(el.getAttribute('data-sheet'))]; play(it[0], 1, it[1]); } return; }
     if (view !== 'lesson') return;
     if (id === 'main') { if (s.t === 'end') go('#home'); else step(pos + 1); return; }
     if (id === 'prev') { if (pos > 0) step(pos - 1); return; }
